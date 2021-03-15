@@ -2,15 +2,21 @@
 
 #include <iostream>
 #include <SFML/Graphics.hpp>
-
-using namespace std;
+#include "consts.h"
 
 class VisibleObject
 {
+protected:
+    sf::Vector2f position;
 
 public:
 
-    virtual bool render(sf::RenderWindow& window){return 1;}
+    VisibleObject(sf::Vector2f _position) : position(_position){}
 
-    virtual void update(){}
+    virtual void render(sf::RenderWindow& window){}
+
+    virtual bool update(float delta){return 1;}
+
+    sf::Vector2f getPosition() const {return position;}
+
 };

@@ -1,11 +1,11 @@
 #include "Window.h"
-#include "Player.h"
 
 int main()
 {
     GameWindow window;
+    int frame=0;
 
     while(!window.render()) {
-
+        // cout << frame++ << endl;
     }
 }

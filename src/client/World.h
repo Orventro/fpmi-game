@@ -5,21 +5,26 @@
 #include <vector>
 #include <set>
 #include "VisibleObject.h"
-#include "Player.h"
-#include "Rock.h"
+#include "Army.h"
 
 class World{
-    Player *mainPlayer;
-    vector<Player*> players;
+private:
+    // Player *mainPlayer;
+    // vector<Player*> players;
     set<VisibleObject*> objects;
+    vector<Army*> armies;
+    int turn;
+    sf::Vector2f cameraPosition;
 
 public:
 
     World();
 
-    void passEvent(sf::Event event);
+    void render(sf::RenderWindow& window);
 
-    void render(sf::RenderWindow& window, sf::Vector2f cameraPosition);
+    void update(float delta, sf::Vector2f _cameraPosition);
 
-    sf::Vector2f getMCposition();
+    void passEvent(sf::Event event, sf::RenderWindow& window);
+
+    ~World();
 };

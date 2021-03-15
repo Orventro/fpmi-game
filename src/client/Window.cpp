@@ -20,20 +20,29 @@ int GameWindow::render()
         if (event.type == sf::Event::Closed)
             window.close();
         else
-            world->passEvent(event);
+            world->passEvent(event, window);
     }
 
     window.clear();
 
+    // camera.set
+
     //update camera
-    sf::Vector2f MCposition = world->getMCposition();
-    sf::Vector2f cameraPositon = camera.getCenter();
-    camera.setCenter(MCposition*0.1f + cameraPositon*0.9f);
+    // sf::Vector2f MCposition = world->getMCposition();
+    // sf::Vector2f cameraPositon = camera.getCenter();
+    // camera.setCenter(MCposition*0.1f + cameraPositon*0.9f);
     window.setView(camera);
+
+    world->update(1/60.0f, camera.getCenter());
     
-    world->render(window, camera.getCenter());
+    world->render(window);
 
     window.display();
 
     return 0;
+}
+
+GameWindow::~GameWindow()
+{
+    delete world;
 }
