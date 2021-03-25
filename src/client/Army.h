@@ -11,15 +11,14 @@ class Army
 
 private:
     set<Unit*> units;
-    // vector<>
     Unit* selected = 0;
     bool active = 0;
     bool animation = 0;
-    int id;
+    const int id;
     sf::CircleShape selectIndicator, attackRad, moveRad;
 
 public:
-    Army(int id); // 0 <= id < 4 !
+    Army(int id); // id in [0, 4)
 
     // void onClick(sf::Vector2f point);
 

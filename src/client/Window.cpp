@@ -1,12 +1,11 @@
 #include "Window.h"
 
 GameWindow::GameWindow(sf::Vector2f size) : 
-    window(sf::VideoMode(size.x, size.y), "Game Name"),
-    camera(sf::FloatRect(0, 0, 1080, 720))
+    window(sf::VideoMode(size.x, size.y), "Game Name")
 {
     world = new World();
 
-    window.setFramerateLimit(60);
+    window.setFramerateLimit(FPS);
 }
 
 int GameWindow::render()
@@ -17,25 +16,22 @@ int GameWindow::render()
     sf::Event event;
     while (window.pollEvent(event))
     {
+        if(event.type == sf::Event::GainedFocus)
+            inFocus = 1;
+        if(event.type == sf::Event::LostFocus)
+            inFocus = 0;
+        
         if (event.type == sf::Event::Closed)
             window.close();
-        else
+        else if(inFocus)
             world->passEvent(event, window);
     }
 
     window.clear();
 
-    // camera.set
-
-    //update camera
-    // sf::Vector2f MCposition = world->getMCposition();
-    // sf::Vector2f cameraPositon = camera.getCenter();
-    // camera.setCenter(MCposition*0.1f + cameraPositon*0.9f);
-    window.setView(camera);
-
-    world->update(1/60.0f, camera.getCenter());
+    world->update(1.0f/FPS);
     
-    world->render(window);
+    world->render(window, inFocus);
 
     window.display();
 

@@ -29,7 +29,7 @@ void Army::update(float delta)
 }
 
 void Army::render(sf::RenderWindow& window)
-{
+{    
     if(selected) {
         selectIndicator.setPosition(selected->getPosition());
         moveRad.setRadius(selected->getEnergy());
@@ -51,12 +51,15 @@ void Army::newMove()
     active = 1;
     for(Unit* u : units)
         u->newMove();
+    
+    cout << id << " new move\n";
 }
 
 void Army::endMove()
 {
     active = 0;
     selected = 0;
+    cout << id << " end move\n";
 }
 
 void Army::action(Unit* u, sf::Vector2f point, sf::Mouse::Button button)
@@ -64,10 +67,10 @@ void Army::action(Unit* u, sf::Vector2f point, sf::Mouse::Button button)
     if(button == sf::Mouse::Button::Right) 
         if(selected != 0 && !selected->isAnimating())
             selected = 0;
-
+    
     if(selected == 0)
     {
-        if(u)
+        if(u && units.count(u))
             selected = u;
     }
     else if(active)

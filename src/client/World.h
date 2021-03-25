@@ -6,23 +6,24 @@
 #include <set>
 #include "VisibleObject.h"
 #include "Army.h"
+#include "consts.h"
+#include "maker_map.h"
 
 class World{
 private:
-    // Player *mainPlayer;
-    // vector<Player*> players;
     set<VisibleObject*> objects;
     vector<Army*> armies;
-    int turn;
-    sf::Vector2f cameraPosition;
-
+    Army* activeArmy;
+    sf::View camera;
+    maker_map map;
+    int turn = 0;
 public:
 
     World();
 
-    void render(sf::RenderWindow& window);
+    void render(sf::RenderWindow& window, bool active);
 
-    void update(float delta, sf::Vector2f _cameraPosition);
+    void update(float delta);
 
     void passEvent(sf::Event event, sf::RenderWindow& window);
 

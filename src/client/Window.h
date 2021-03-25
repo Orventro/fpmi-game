@@ -11,8 +11,8 @@ class GameWindow
 private:
     sf::RenderWindow window;
     sf::CircleShape shape;
-    sf::View camera;
     sf::Clock clock;
+    bool inFocus = 0;
 
     World* world;
 

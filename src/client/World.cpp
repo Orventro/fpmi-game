@@ -2,55 +2,54 @@
 #include "consts.h"
 
 World::World() :
-    turn(0)
+    camera(sf::FloatRect(0, 0, 1080, 720)),
+    map( 8*size_screen_in_block_h, 8*size_screen_in_block_w, 100, 100, size_elemantary_block_in_pixel * pixel_size, 1)
 {
 
     armies.push_back(new Army(0));
     armies.push_back(new Army(1));
-    armies[0]->newMove();
+    activeArmy = armies[0];
+    activeArmy->newMove();
+    map.render();
 }
 
 void World::passEvent(sf::Event event, sf::RenderWindow& window)
-{
+{ 
     if(event.type == sf::Event::MouseButtonPressed)
     {
         // Calculate click target
 
         sf::Vector2f mousePtr(sf::Mouse::getPosition(window));
-        mousePtr += cameraPosition - windowDims * 0.5f;
+        mousePtr += camera.getCenter() - windowDims * 0.5f;
         
-        float normToUnit = 1e20;
+        float normToUnit = 400; // max dist to detect click
         Unit* pointedUnit = 0;
         for(auto a : armies) 
         {
-            
             for(auto u : *a->getUnits()) 
             {
                 if(normToUnit > norm(u->getPosition() - mousePtr) ) 
                 {
-                    normToUnit = norm(u->getPosition() - mousePtr);
-
-                    if(normToUnit < 400) 
-                    {
-                        pointedUnit = u;
-                    }
+                    normToUnit = normToUnit;
+                    pointedUnit = u;
                 }
             }
         }
 
-        if(!armies[turn % armies.size()]->isAnimating())
-            armies[turn % armies.size()]->action(pointedUnit, mousePtr, event.mouseButton.button);
+        if(!activeArmy->isAnimating())
+            activeArmy->action(pointedUnit, mousePtr, event.mouseButton.button);
+        
     }
 
     if(event.type == sf::Event::KeyPressed) 
     {
         if(event.key.code == sf::Keyboard::Space) 
         {
-            if(!armies[turn % armies.size()]->isAnimating())
+            if(!activeArmy->isAnimating())
             {
-                armies[turn % armies.size()]->endMove();
-                turn++;
-                armies[turn % armies.size()]->newMove();
+                activeArmy->endMove();
+                activeArmy = armies[(++turn) % armies.size()];
+                activeArmy->newMove();
 
                 cout << "turn " << turn << endl;
             }
@@ -58,35 +57,30 @@ void World::passEvent(sf::Event event, sf::RenderWindow& window)
     }
 }
 
-void World::update(float delta, sf::Vector2f _cameraPosition)
+void World::update(float delta)
 {
-    cameraPosition = _cameraPosition;
     
     for(Army* a : armies)
         a->update(delta);
 }
 
-void World::render(sf::RenderWindow& window)
+void World::render(sf::RenderWindow& window, bool active)
 {
-    // if(sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-    //     mainPlayer->accelerate(PLAYER_ACCELERATION*UP);
+    if(active)
+    {
+        if(sf::Mouse::getPosition(window).x < 100)
+            camera.move(LEFT * CAMERA_SPEED);
+        if(sf::Mouse::getPosition(window).x > windowWidth-100)
+            camera.move(RIGHT * CAMERA_SPEED);
+        if(sf::Mouse::getPosition(window).y < 100)
+            camera.move(UP * CAMERA_SPEED);
+        if(sf::Mouse::getPosition(window).y > windowHeight-100)
+            camera.move(DOWN * CAMERA_SPEED);
+    }
 
-    // if(sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-    //     mainPlayer->accelerate(PLAYER_ACCELERATION*LEFT);
+    window.setView(camera);
 
-    // if(sf::Keyboard::isKeyPressed(sf::Keyboard::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-    //     mainPlayer->accelerate(PLAYER_ACCELERATION*DOWN);
-
-    // if(sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-    //     mainPlayer->accelerate(PLAYER_ACCELERATION*RIGHT);
-
-    // if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-    //     Bullet* b;
-    //     if(b = mainPlayer->shoot()) 
-    //         objects.insert(b);
-    // }
-
-    
+    map.draw(window, {0, 0});
 
     for(auto o : objects) 
         o->render(window);

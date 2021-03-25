@@ -4,11 +4,13 @@ Unit::Unit(sf::Vector2f _position, float _health, float _speed, float _damage, f
     VisibleObject(_position),
     destination(_position),
     health(_health),
+    maxHealth(_health),
     speed(_speed),
     damage(_damage),
     maxEnergy(_maxEnergy),
     shape(20, 4),
-    attackRadius(_attackRadius)
+    attackRadius(_attackRadius),
+    hpbar(_position + HP_BAR_OFFSET, HP_BAR_SIZE, HP_BACK_COL, HP_FRONT_COL)
 {
     shape.setFillColor(color);
     shape.setOrigin(20, 20);
@@ -35,6 +37,7 @@ void Unit::attacked(float dmg) {
     if(health == 0.0f) {
         alive = 0;
     }
+    hpbar.setProgress(health / maxHealth);
 }
 
 bool Unit::attack(Unit* u)
@@ -58,6 +61,8 @@ bool Unit::update(float delta)
         position = position * (1 - ratio) + destination * ratio;
     }
 
+    hpbar.moveTo(position + HP_BAR_OFFSET);
+
     return alive;
 }
 
@@ -65,6 +70,7 @@ void Unit::render(sf::RenderWindow& window)
 {   
     shape.setPosition(position);
     window.draw(shape);
+    hpbar.render(window);
 }
 
 bool Unit::isAnimating() const

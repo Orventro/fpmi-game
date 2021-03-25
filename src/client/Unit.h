@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VisibleObject.h"
+#include "Bar.h"
 #include "consts.h"
 
 class Unit : public VisibleObject 
@@ -8,9 +9,10 @@ class Unit : public VisibleObject
 private:
     bool alive = 1;
     float energy;
-    float health, speed, damage, maxEnergy, attackRadius;
+    float health, maxHealth, speed, damage, maxEnergy, attackRadius;
     sf::Vector2f destination;
     sf::CircleShape shape;
+    Bar hpbar;
 
 public:
     Unit(sf::Vector2f _position, float _health, float _speed, float _damage, float _maxEnergy, float _attackRadius, sf::Color color);
