@@ -2,7 +2,7 @@
 #include "consts.h"
 
 World::World() :
-    camera(sf::FloatRect(0, 0, 1080, 720)),
+    camera(sf::FloatRect(0, 0, windowWidth, windowHeight)),
     map( 8*size_screen_in_block_h, 8*size_screen_in_block_w, 100, 100, size_elemantary_block_in_pixel * pixel_size, 1)
 {
 

@@ -17,7 +17,7 @@ private:
     World* world;
 
 public:
-    GameWindow(sf::Vector2f size = sf::Vector2f(1080, 720));
+    GameWindow(sf::Vector2f size = windowDims);
 
     int render();
 

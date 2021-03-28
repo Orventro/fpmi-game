@@ -23,7 +23,7 @@ int GameWindow::render()
         
         if (event.type == sf::Event::Closed)
             window.close();
-        else if(inFocus)
+        else 
             world->passEvent(event, window);
     }
 
