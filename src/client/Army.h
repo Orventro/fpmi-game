@@ -16,25 +16,19 @@ private:
     bool animation = 0;
     const int id;
     sf::CircleShape selectIndicator, attackRad, moveRad;
+    int gold = START_GOLD;
 
 public:
     Army(int id); // id in [0, 4)
 
-    // void onClick(sf::Vector2f point);
-
     void render(sf::RenderWindow& window);
-
     void update(float delta);
-
     void newMove();
-
     void endMove();
-
     void action(Unit* u, sf::Vector2f point, sf::Mouse::Button button);
-
-    const set<Unit*>* getUnits() const;
-
     bool isAnimating() const;
+    int getGold() const;
+    const set<Unit*>* getUnits() const;
 
     ~Army();
 

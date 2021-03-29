@@ -15,23 +15,22 @@ int GameWindow::render()
     
     sf::Event event;
     while (window.pollEvent(event))
-    {
-        if(event.type == sf::Event::GainedFocus)
-            inFocus = 1;
-        if(event.type == sf::Event::LostFocus)
-            inFocus = 0;
-        
+    {   
         if (event.type == sf::Event::Closed)
             window.close();
         else 
             world->passEvent(event, window);
     }
+    // int x = sf::Mouse::getPosition(window).x;
+    // int y = sf::Mouse::getPosition(window).y;
+    // if(x >= 0 && y >= 0 && x <= windowWidth && y <= windowHeight)
+    //     inFocus = 1;
+    // else
+    //     inFocus = 0;
 
     window.clear();
 
-    world->update(1.0f/FPS);
-    
-    world->render(window, inFocus);
+    world->render(window, 1.0f/FPS, 1);
 
     window.display();
 

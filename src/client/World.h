@@ -17,15 +17,19 @@ private:
     sf::View camera;
     maker_map map;
     int turn = 0;
+    sf::Text gold_amount;
+    sf::Font gold_font;
+    sf::Vector2f size;
+
 public:
 
-    World();
+    World(sf::Vector2f _size = windowDims * 2.0f);
 
-    void render(sf::RenderWindow& window, bool active);
-
-    void update(float delta);
+    void render(sf::RenderWindow& window, float delta, bool active);
 
     void passEvent(sf::Event event, sf::RenderWindow& window);
+
+    const vector<Army*>& getArmies() const;
 
     ~World();
 };

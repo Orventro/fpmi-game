@@ -9,6 +9,8 @@ Bar::Bar(sf::Vector2f _position, sf::Vector2f size, sf::Color frontCol, sf::Colo
     back.setFillColor(backCol);
     front.setOrigin(size / 2.0f);
     back.setOrigin(size / 2.0f);
+    front.setPosition(position);
+    back.setPosition(position);
 }
 
 void Bar::setProgress(float progress)

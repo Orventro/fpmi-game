@@ -1,7 +1,7 @@
 #include "maker_map.h"
 #include "consts.h"
 
-maker_map:: maker_map( 	size_t size_h ,size_t size_w, size_t step_h , size_t step_w , size_t _sprite_size, time_t seed) 
+maker_map:: maker_map(size_t size_h ,size_t size_w, size_t step_h , size_t step_w , size_t _sprite_size, time_t seed) 
 {
 	height = size_h ;
 	width = size_w ;

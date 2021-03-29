@@ -108,3 +108,8 @@ Army::~Army()
     for(auto u : units)
         delete u;
 }
+
+int Army::getGold() const
+{
+    return gold;
+}

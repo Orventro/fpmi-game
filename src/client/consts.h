@@ -1,11 +1,13 @@
 #pragma once
 
+#include "Resources.h"
 #include <SFML/Graphics.hpp>
 #include <cmath>
 #include <vector>
 #include <set>
 #include <chrono>
 #include <iostream>
+#include <string>
 
 using std::set;
 using std::cout;
@@ -37,6 +39,7 @@ const sf::Vector2f ARMY_POSITIONS[] = {sf::Vector2f(20, 20), sf::Vector2f(20, 40
 const sf::Color SELECT_COLOR(20, 250, 20, 90);
 const sf::Color MOVE_COLOR(160, 220, 10, 50);
 const sf::Color ATTACK_COLOR(240, 50, 10, 70);
+const sf::Color GOLD_COLOR(247, 235, 10, 255);
 
 const int FPS = 60;
 
@@ -55,3 +58,7 @@ const size_t rand_denominator =  10000;
 const size_t sprite_size = size_elemantary_block_in_pixel * pixel_size;
 
 const sf::Color TERRAIN_COLORS[] = {sf::Color::Black, sf::Color(0, 128, 255), sf::Color::Yellow, sf::Color::Green};
+
+const int START_GOLD = 30;
+
+const sf::Vector2f GOLD_OFFSET(-100, -30);
