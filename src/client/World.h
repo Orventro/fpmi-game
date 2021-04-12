@@ -8,6 +8,9 @@
 #include "Army.h"
 #include "consts.h"
 #include "maker_map.h"
+#include "Window.h"
+
+class GameWindow;
 
 class World{
 private:
@@ -20,16 +23,16 @@ private:
     sf::Text gold_amount;
     sf::Font gold_font;
     sf::Vector2f size;
+    GameWindow* const gameWindow;
 
 public:
 
-    World(sf::Vector2f _size = windowDims * 2.0f);
+    World(GameWindow *_window, sf::Vector2f _size = WORLD_SIZE);
 
     void render(sf::RenderWindow& window, float delta, bool active);
-
     void passEvent(sf::Event event, sf::RenderWindow& window);
-
     const vector<Army*>& getArmies() const;
+    void onResized();
 
     ~World();
 };

@@ -18,6 +18,7 @@ private:
     sf::CircleShape selectIndicator, attackRad, moveRad;
     int gold = START_GOLD;
 
+
 public:
     Army(int id); // id in [0, 4)
 
@@ -25,6 +26,7 @@ public:
     void update(float delta);
     void newMove();
     void endMove();
+    void recruit();
     void action(Unit* u, sf::Vector2f point, sf::Mouse::Button button);
     bool isAnimating() const;
     int getGold() const;

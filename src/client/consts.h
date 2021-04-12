@@ -22,10 +22,10 @@ const sf::Vector2f RIGHT( 1,  0);
 
 const float CAMERA_SPEED = 5;
 
-const int windowWidth = 1080;
-const int windowHeight = 720;
+// const int windowWidth = 1080;
+// const int windowHeight = 720;
 
-const sf::Vector2f windowDims(windowWidth, windowHeight);
+// const sf::Vector2f windowDims(windowWidth, windowHeight);
 
 const std::chrono::milliseconds RELOAD_TIME(200);
 
@@ -48,10 +48,12 @@ const sf::Color HP_BACK_COL(67, 191, 36);
 const sf::Color HP_FRONT_COL(153, 26, 6);
 const sf::Vector2f HP_BAR_OFFSET(0, 30);
 
+const sf::Vector2f WORLD_SIZE(2000, 2000);
+
 const size_t size_elemantary_block_in_pixel = 2;
 const size_t pixel_size = 1.f;
-const size_t size_screen_in_block_w =  std::ceil( ( (double) windowWidth) / ( size_elemantary_block_in_pixel ) );
-const size_t size_screen_in_block_h =  std::ceil( ( (double) windowHeight) / ( size_elemantary_block_in_pixel ) );
+// const size_t size_screen_in_block_w =  std::ceil( ( (double) windowWidth) / ( size_elemantary_block_in_pixel ) );
+// const size_t size_screen_in_block_h =  std::ceil( ( (double) windowHeight) / ( size_elemantary_block_in_pixel ) );
 const unsigned int step_node_h = 100;
 const unsigned int step_node_w = 100;
 const size_t rand_denominator =  10000;
@@ -59,6 +61,6 @@ const size_t sprite_size = size_elemantary_block_in_pixel * pixel_size;
 
 const sf::Color TERRAIN_COLORS[] = {sf::Color::Black, sf::Color(0, 128, 255), sf::Color::Yellow, sf::Color::Green};
 
-const int START_GOLD = 30;
+const int START_GOLD = 0;
 
 const sf::Vector2f GOLD_OFFSET(-100, -30);

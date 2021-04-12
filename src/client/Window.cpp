@@ -1,9 +1,10 @@
 #include "Window.h"
 
-GameWindow::GameWindow(sf::Vector2f size) : 
-    window(sf::VideoMode(size.x, size.y), "Game Name")
+GameWindow::GameWindow(sf::Vector2u size) : 
+    window(sf::VideoMode(size.x, size.y), "Game Name"),
+    windowDims(size)
 {
-    world = new World();
+    world = new World(this);
 
     window.setFramerateLimit(FPS);
 }
@@ -18,6 +19,11 @@ int GameWindow::render()
     {   
         if (event.type == sf::Event::Closed)
             window.close();
+        else if(event.type == sf::Event::Resized) 
+        {
+            windowDims = window.getSize();
+            world->onResized();
+        } 
         else 
             world->passEvent(event, window);
     }
@@ -35,6 +41,11 @@ int GameWindow::render()
     window.display();
 
     return 0;
+}
+
+sf::Vector2u GameWindow::getSize() const
+{
+    return windowDims;
 }
 
 GameWindow::~GameWindow()

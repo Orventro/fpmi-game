@@ -11,7 +11,7 @@ Army::Army(int _id) :
     moveRad.setFillColor(MOVE_COLOR);
     attackRad.setFillColor(ATTACK_COLOR);
     attackRad.setOrigin(50, 50);
-    units.insert(new Unit(ARMY_POSITIONS[id], 100, 300, 50, 500, 50, ARMY_COLORS[_id]));
+    units.insert(new Unit(ARMY_POSITIONS[id], 100, 300, 50, 500, 50, ARMY_COLORS[id]));
 }
 
 void Army::update(float delta)
@@ -49,6 +49,7 @@ void Army::render(sf::RenderWindow& window)
 void Army::newMove()
 {
     active = 1;
+    gold += 10;
     for(Unit* u : units)
         u->newMove();
     
@@ -103,13 +104,21 @@ bool Army::isAnimating() const
     return selected->isAnimating();
 }
 
+int Army::getGold() const
+{
+    return gold;
+}
+
+void Army::recruit() 
+{
+    if(gold >= 20) {
+        units.insert(new Unit(ARMY_POSITIONS[id], 100, 300, 50, 500, 50, ARMY_COLORS[id]));
+        gold -= 20;
+    }
+}
+
 Army::~Army()
 {
     for(auto u : units)
         delete u;
-}
-
-int Army::getGold() const
-{
-    return gold;
 }
