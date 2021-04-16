@@ -3,11 +3,11 @@
 town::town () 
 {   
     numb_player = 0;
-    none.loadFromFile("/home/ilya/vs_code_projects/fpmi-game/res/points/none.png");
+    none.loadFromMemory( __res_points_none_png, __res_points_none_png_len);
     none.createMaskFromColor(sf::Color(255,255, 255));
-    red.loadFromFile("/home/ilya/vs_code_projects/fpmi-game/res/points/red.png");
+    red.loadFromMemory(__res_points_red_png, __res_points_red_png_len  );
     red.createMaskFromColor(sf::Color(255,255, 255));
-    blue.loadFromFile("/home/ilya/vs_code_projects/fpmi-game/res/points/blue.png");
+    blue.loadFromMemory( __res_points_blue_png, __res_points_blue_png_len);
 }
 
 
@@ -15,11 +15,11 @@ town:: town( const sf::Vector2f &pos , const unsigned int pl )
 {
     coord = pos;
     numb_player = pl;
-    none.loadFromFile("/home/ilya/vs_code_projects/fpmi-game/res/points/none.png");
+    none.loadFromMemory( __res_points_none_png, __res_points_none_png_len);
     none.createMaskFromColor(sf::Color(255,255, 255));
-    red.loadFromFile("/home/ilya/vs_code_projects/fpmi-game/res/points/red.png");
+    red.loadFromMemory(__res_points_red_png, __res_points_red_png_len  );
     red.createMaskFromColor(sf::Color(255,255, 255));
-    blue.loadFromFile("/home/ilya/vs_code_projects/fpmi-game/res/points/blue.png");
+    blue.loadFromMemory( __res_points_blue_png, __res_points_blue_png_len); 
     blue.createMaskFromColor(sf::Color(255,255, 255));
 }
 town:: ~town () 

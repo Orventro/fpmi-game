@@ -2,6 +2,9 @@
 
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include "Point_blue.h"
+#include "Point_red.h"
+#include "Point_none.h"
 
 class town
 {
