@@ -10,11 +10,11 @@ private:
     bool alive = 1;
     float energy;
     float health, maxHealth, speed, damage, maxEnergy, attackRadius;
-    sf::Vector2f destination;
     sf::CircleShape shape;
     Bar hpbar;
 
 public:
+    sf::Vector2f destination;
     Unit(sf::Vector2f _position, float _health, float _speed, float _damage, float _maxEnergy, float _attackRadius, sf::Color color);
 
     void newMove();

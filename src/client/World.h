@@ -25,6 +25,8 @@ private:
     sf::Vector2f size;
     GameWindow* const gameWindow;
 
+    void update_town ();
+
 public:
 
     World(GameWindow *_window, sf::Vector2f _size = WORLD_SIZE);

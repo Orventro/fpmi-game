@@ -6,7 +6,7 @@ World::World(GameWindow* _window, sf::Vector2f _size) :
     size(_size),
     camera(sf::FloatRect(0, 0, _window->getSize().x, _window->getSize().y)),
     map(_size.y, _size.x, 100, 100, size_elemantary_block_in_pixel * pixel_size, 1)
-{
+{   
     armies.push_back(new Army(0));
     armies.push_back(new Army(1));
     activeArmy = armies[0];
@@ -24,10 +24,12 @@ World::World(GameWindow* _window, sf::Vector2f _size) :
         exit(1);
     }
     gold_amount.setFont(gold_font);
+
 }
 
 void World::passEvent(sf::Event event, sf::RenderWindow& renderWindow)
 { 
+
     if(event.type == sf::Event::MouseButtonPressed)
     {
         // Calculate click target
@@ -49,13 +51,13 @@ void World::passEvent(sf::Event event, sf::RenderWindow& renderWindow)
             }
         }
 
-        if(!activeArmy->isAnimating())
+        if(!activeArmy->isAnimating()) 
             activeArmy->action(pointedUnit, mousePtr, event.mouseButton.button);
-        
     }
 
     if(event.type == sf::Event::KeyPressed) 
-    {
+    {   
+        World::update_town();
         if(event.key.code == sf::Keyboard::Space) 
         {
             if(!activeArmy->isAnimating())
@@ -65,8 +67,9 @@ void World::passEvent(sf::Event event, sf::RenderWindow& renderWindow)
                 activeArmy->newMove();
                 gold_amount.setString("GOLD: " + std::to_string(activeArmy->getGold()));
 
-                cout << "turn " << turn << endl;
+                
             }
+
         } 
         else if(event.key.code == sf::Keyboard::N)
         {
@@ -150,5 +153,51 @@ World::~World()
 {
     for(auto a : armies){
         delete a;
+    }
+}   
+
+void World::update_town () 
+{   
+    int cur_pl = (turn % this->armies.size()) +1;
+    int range = 3000;
+    for ( auto t : this->map.Towns ) 
+    {   
+        if ( t->numb_player == cur_pl )
+            continue;
+        bool flag_change = false;
+        for( auto u : *activeArmy->getUnits() ) 
+        {
+            size_t d = (u->getPosition().x - t->get_coord().x)*(u->getPosition().x - t->get_coord().x) + (u->getPosition().y - t->get_coord().y)*(u->getPosition().y - t->get_coord().y) ;
+                if( range > d ) 
+                {
+                    flag_change = true;     
+                }
+        }
+
+        if ( t->numb_player == 0 ) 
+        {   
+            if ( flag_change )
+                map.change_player(t, cur_pl );
+        }
+        else 
+        {   
+            for(auto A : armies) 
+            {       
+                if ( A ==  activeArmy )
+                    continue;
+                for(auto u : *A->getUnits()) 
+                {	
+                	size_t dd = (u->getPosition().x - t->get_coord().x)*(u->getPosition().x - t->get_coord().x) + (u->getPosition().y - t->get_coord().y)*(u->getPosition().y - t->get_coord().y) ;
+                    if( range > dd ) 
+                    {
+                        flag_change = false;
+                    }
+                }
+            }
+            if ( flag_change ) 
+            {
+                map.change_player( t, cur_pl); 
+            }
+        }    
     }
 }

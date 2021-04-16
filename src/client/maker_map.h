@@ -11,42 +11,33 @@
 
 #include "perlin_noise.h"
 #include "painter.h"
+#include "town.h"
 
 
 class maker_map
 {
 public:
+	sf::Image image_map;
+	std::vector<town*> Towns;
 	
 	maker_map( 	size_t size_h ,size_t size_w, size_t step_h , size_t step_w , size_t sprite_size, time_t seed);
 	~maker_map();
 
-	struct type_distance {
-    	unsigned int x;
-    	unsigned int y;
-    	unsigned int distance;
-    	
-    	type_distance ( unsigned int x, unsigned int y  , unsigned int distance) {
-        	this->x = x;
-        	this->y = y;
-        	this->distance = distance;
-    	}
-
-    	bool operator < ( const type_distance &A ) 
-    	{
-    		return this->distance < A.distance;
-    	}
-	};
 
 	void render();
 
 	void  draw (sf::RenderWindow &window, const sf::Vector2f center  );
+
+	void create_towns();
+
+	void change_player ( town* t, int pl );
+
 
 private:
 	size_t height;
 	size_t width;
 	size_t step_node_h ;
 	size_t step_node_w ;
-	sf::Image image_map;
 	sf::Texture mapTexture;
 	sf::Sprite mapSprite;
 
@@ -54,11 +45,10 @@ private:
 	std::vector<std::vector< unsigned int> > distance_neighborhood_biom;
 
 
-	std::pair<unsigned int, unsigned int>  get_window_size_in_blocks ( sf::RenderWindow &window ) ;
-	void draw_block_water ( std::pair<size_t, size_t> otn_coord  );
-	void draw_block_sand ( std::pair<size_t, size_t> otn_coord  );
-	void draw_block_grass ( std::pair<size_t, size_t> otn_coord  );
+	std::pair<unsigned int, unsigned int>  get_window_size_in_blocks ( sf::RenderWindow &window ) ;	
 
-	void draw_block(sf::Vector2u otn_coord, int type);
+	bool check_distance_water (const sf::Vector2u &coord) ;
+	bool check_distance_town( const sf::Vector2u &coord);
+	void create_one_town();
 
 };
