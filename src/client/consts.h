@@ -9,6 +9,13 @@
 #include <iostream>
 #include <string>
 
+// классы задекларированы здесь, поскольку ссылаются друг на друга
+class GameWindow;
+class Army;
+class World;
+class WorldMap;
+class Town;
+
 using std::set;
 using std::cout;
 using std::endl;
@@ -22,6 +29,8 @@ const sf::Vector2f RIGHT( 1,  0);
 
 const float CAMERA_SPEED = 5;
 
+
+const sf::Vector2f DEFAULT_WINDOW_SIZE(800, 600);
 // const int windowWidth = 1080;
 // const int windowHeight = 720;
 
@@ -33,13 +42,17 @@ float norm(sf::Vector2f v);
 std::ostream& operator<<(std::ostream& os, const sf::Vector2f& v);
 
 const sf::Color ARMY_COLORS[] = {sf::Color::Blue, sf::Color::Red, sf::Color::Yellow, sf::Color::Green};
+const sf::Color BLANK_TOWN_COLOR = sf::Color(73, 75, 77, 255);
 
 const sf::Vector2f ARMY_POSITIONS[] = {sf::Vector2f(20, 20), sf::Vector2f(20, 400), sf::Vector2f(400, 20), sf::Vector2f(400, 400)};
+
+// цвета элементов UI
 
 const sf::Color SELECT_COLOR(20, 250, 20, 90);
 const sf::Color MOVE_COLOR(160, 220, 10, 50);
 const sf::Color ATTACK_COLOR(240, 50, 10, 70);
 const sf::Color GOLD_COLOR(247, 235, 10, 255);
+const sf::Color TOWN_RADIUS_COLOR(199, 132, 219, 100);
 
 const int FPS = 60;
 
@@ -64,3 +77,9 @@ const sf::Color TERRAIN_COLORS[] = {sf::Color::Black, sf::Color(0, 128, 255), sf
 const int START_GOLD = 0;
 
 const sf::Vector2f GOLD_OFFSET(-100, -30);
+
+// Радиус в котором город находится под влиянием его армии и не может быть захвачен. 
+// Также радиус, в котором может появится новый юнит из этого города.
+const float TOWN_RADIUS = 1e2;
+// Во второй степени
+const float TOWN_RADIUS2 = 1e4;

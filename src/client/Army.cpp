@@ -1,17 +1,15 @@
 #include "Army.h"
 
-Army::Army(int _id) :
-    id(_id),
-    selectIndicator(30, 16),
+Army::Army(World *world, int _id) :
     attackRad(50, 32),
-    moveRad(500, 64)
+    moveRad(500, 32),
+    id(_id),
+    home(world)
 {
-    selectIndicator.setFillColor(SELECT_COLOR);
-    selectIndicator.setOrigin(30, 30);
+    units.insert(new Unit(ARMY_POSITIONS[id], 100, 300, 50, 500, 50, ARMY_COLORS[id]));
     moveRad.setFillColor(MOVE_COLOR);
     attackRad.setFillColor(ATTACK_COLOR);
     attackRad.setOrigin(50, 50);
-    units.insert(new Unit(ARMY_POSITIONS[id], 100, 300, 50, 500, 50, ARMY_COLORS[id]));
 }
 
 void Army::update(float delta)
@@ -29,27 +27,29 @@ void Army::update(float delta)
 }
 
 void Army::render(sf::RenderWindow& window)
-{    
+{   
+    for(Unit* u : units) 
+        u->render(window);
+    
     if(selected) {
-        selectIndicator.setPosition(selected->getPosition());
         moveRad.setRadius(selected->getEnergy());
         moveRad.setOrigin(selected->getEnergy(), selected->getEnergy());
         moveRad.setPosition(selected->getPosition());
-        attackRad.setPosition(selected->getPosition());
-
-        
         window.draw(moveRad);
-        window.draw(attackRad);
-        window.draw(selectIndicator);
+
+        if(selected->getEnergy() >= 400) {
+            window.draw(attackRad);
+            attackRad.setPosition(selected->getPosition());
+        }
     }
-    for(Unit* u : units) 
-        u->render(window);
 }
 
 void Army::newMove()
 {
+    if(selected)
+        selected->finishAnimation();
     active = 1;
-    gold += 10;
+    // gold += 10;
     for(Unit* u : units)
         u->newMove();
     
@@ -63,33 +63,53 @@ void Army::endMove()
     cout << id << " end move\n";
 }
 
-void Army::action(Unit* u, sf::Vector2f point, sf::Mouse::Button button)
-{
-    if(button == sf::Mouse::Button::Right) 
-        if(selected != 0 && !selected->isAnimating())
-            selected = 0;
-    
-    if(selected == 0)
-    {
-        if(u && units.count(u))
-            selected = u;
-    }
-    else if(active)
-    {
-        if(u == 0) 
-        {
-            if(selected->moveTo(point)) 
-                animation = 1;
-        } 
-        else
-        {
-            if(!units.count(u))
-            {
-                selected->attack(u);
-            }
+bool Army::recruit(sf::Vector2f point, int unitType) {
+    if(unitType == 1) {
+        if(gold >= 20){
+            gold -= 20;
+            units.insert(new Unit(point, 100, 300, 50, 500, 50, ARMY_COLORS[id]));
+            return 1;
         }
-        
     }
+    return 0;
+}
+
+void Army::action(Unit* u, sf::Vector2f point)
+{  
+    if(selected == 0)
+        return;
+    if(u == 0) 
+    {
+        if(selected->moveTo(point)) {
+            animation = 1;
+            Town* t = home->seizeTown(point);
+            if(t)
+                t->setOwner(this);
+        }
+    } 
+    else
+        selected->attack(u);
+}
+
+bool Army::select(sf::Vector2f point) 
+{
+    if(isAnimating())
+        return 0;
+    // cout << point << (*units.begin())->getPosition() << endl;
+    float normToUnit = 400; // max dist to detect click
+    Unit *pointedUnit = 0;
+    for (auto u : units)
+    {
+        if (normToUnit > norm(u->getPosition() - point))
+        {
+            normToUnit = normToUnit;
+            pointedUnit = u;
+        }
+    }
+    if(pointedUnit == 0)
+        return 0;
+    selected = pointedUnit;
+    return 1;
 }
 
 const set<Unit*>* Army::getUnits() const 
@@ -104,17 +124,29 @@ bool Army::isAnimating() const
     return selected->isAnimating();
 }
 
+bool Army::unselect()
+{
+    if(!selected)
+        return 1;
+    if(selected->isAnimating())
+        return 0;
+    selected = 0;
+    return 1;
+}
+
 int Army::getGold() const
 {
     return gold;
 }
 
-void Army::recruit() 
+void Army::giveGold(int amount)
 {
-    if(gold >= 20) {
-        units.insert(new Unit(ARMY_POSITIONS[id], 100, 300, 50, 500, 50, ARMY_COLORS[id]));
-        gold -= 20;
-    }
+    gold += amount;
+}
+
+int Army::getId()
+{
+    return id;
 }
 
 Army::~Army()

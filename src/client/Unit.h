@@ -1,8 +1,8 @@
 #pragma once
 
+#include "consts.h"
 #include "VisibleObject.h"
 #include "Bar.h"
-#include "consts.h"
 
 class Unit : public VisibleObject 
 {
@@ -24,6 +24,7 @@ public:
     void render(sf::RenderWindow& window);
     bool update(float delta);
     bool isAnimating() const;
+    void finishAnimation();
     float getEnergy() const;
 
     ~Unit();

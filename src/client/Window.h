@@ -1,30 +1,37 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <functional>
 #include "VisibleObject.h"
 #include "World.h"
-
-using namespace std;
-
-class World;
 
 class GameWindow
 {
 private:
     sf::RenderWindow window;
-    sf::CircleShape shape;
     sf::Clock clock;
     bool inFocus = 0;
-    sf::Vector2u windowDims;
-
     World* world;
 
+    // UI
+    sf::Text hint, goldAmount;
+    sf::Font defaultFont, goldFont;
+    sf::CircleShape townRad;
+    // int myArmyId = 0;
+
+    // these functions are for finite automaton
+    void neutral(sf::Event); // default state: unit not selected
+    void waiting(sf::Event); // awaiting for your move (currently not used)
+    void choose_new_unit(sf::Event); // choosing new unit
+    void place_new_unit(sf::Event); // placing new unit
+    void unit_selected(sf::Event); // unit selected, waiting for command to it
+
+    void (GameWindow::*state)(sf::Event);
+
 public:
-    GameWindow(sf::Vector2u size = sf::Vector2u(800, 600));
+    GameWindow(sf::Vector2f size = DEFAULT_WINDOW_SIZE);
 
     int render();
-
-    sf::Vector2u getSize() const;
 
     ~GameWindow();
 };

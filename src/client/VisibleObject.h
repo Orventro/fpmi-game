@@ -11,9 +11,9 @@ protected:
 
 public:
 
-    VisibleObject(sf::Vector2f _position) : position(_position){}
+    VisibleObject(sf::Vector2f pos) : position(pos){}
 
-    virtual void render(sf::RenderWindow& window){}
+    virtual void render(sf::RenderWindow& window) const{}
 
     virtual bool update(float delta){return 1;}
 

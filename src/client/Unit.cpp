@@ -42,8 +42,11 @@ void Unit::attacked(float dmg) {
 
 bool Unit::attack(Unit* u)
 {
+    if(energy < 400) // 400 - cost of attack (for now)
+        return 0;
     if(norm(u->getPosition() - position) <= attackRadius*attackRadius) {
         u->attacked(damage);
+        energy -= 400;
         return 1;
     }
     return 0;
@@ -64,6 +67,10 @@ bool Unit::update(float delta)
     hpbar.moveTo(position + HP_BAR_OFFSET);
 
     return alive;
+}
+
+void Unit::finishAnimation(){
+    position = destination;
 }
 
 void Unit::render(sf::RenderWindow& window)
