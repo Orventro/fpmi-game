@@ -53,14 +53,14 @@ void Army::newMove()
     for(Unit* u : units)
         u->newMove();
     
-    cout << id << " new move\n";
+    // cout << id << " new move\n";
 }
 
 void Army::endMove()
 {
     active = 0;
     selected = 0;
-    cout << id << " end move\n";
+    // cout << id << " end move\n";
 }
 
 bool Army::recruit(sf::Vector2f point, int unitType) {

@@ -134,13 +134,9 @@ bool World::recruit(sf::Vector2f point, int unitType)
     point += camera.getCenter() - windowSize*0.5f;
     
     // проверяем, если рядом с выбранной точкой есть город, принадлежащий этой армии
-    for(Town *t : map->getTowns()) {
-        if(norm(t->getPosition() - point) < TOWN_RADIUS2 & t->get_owner() == activeArmy) {
-            if (activeArmy->recruit(point, unitType))
-                return 1;
-            else cout << "no recr\n";
-        }
-    }
+    for(Town *t : map->getTowns()) 
+        if(norm(t->getPosition() - point) < TOWN_RADIUS2 & t->get_owner() == activeArmy) 
+                return activeArmy->recruit(point, unitType);
     return 0;
 }
 
