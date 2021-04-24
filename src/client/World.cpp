@@ -27,7 +27,12 @@ void World::newMove()
 
 bool World::selectUnit(sf::Vector2f point) {
     point += camera.getCenter() - windowSize*0.5f;
-    return activeArmy->select(point);
+    if(activeArmy->select(point)) {
+        // cout << "rb\n";
+        map->renderBorder(sf::Vector2u(activeArmy->getSelectedUnit()->getPosition()), activeArmy->getSelectedUnit()->getEnergy());
+        return 1;
+    }
+    return 0;
 }
 
 void World::action(sf::Vector2f point) {
@@ -49,7 +54,18 @@ void World::action(sf::Vector2f point) {
             }
         }
     }
-    activeArmy->action(pointedUnit, point);
+    if(pointedUnit)
+        activeArmy->attack(pointedUnit);
+    else{
+        auto path = map->getPath(point);
+        if(path.second != 0) {
+            activeArmy->moveTo(path.first, path.second);
+            Town* t = seizeTown(point);
+            if(t)
+                t->setOwner(activeArmy);
+            map->renderBorder(sf::Vector2u(point), path.second);
+        }
+    }
 }
 
 bool World::unselect()
@@ -97,14 +113,14 @@ void World::moveCamera(sf::RenderWindow& renderWindow, float dt){
 
 }
 
-void World::render(sf::RenderWindow &renderWindow, float dt, bool drawTownRadius)
+void World::render(sf::RenderWindow &renderWindow, float dt, bool drawTownRadius, bool drawMovementBorder)
 {
     for (Army *a : armies)
         a->update(dt);
 
     moveCamera(renderWindow, dt);
     
-    map->draw(renderWindow, {0, 0}, drawTownRadius);
+    map->draw(renderWindow, {0, 0}, drawTownRadius, drawMovementBorder);
 
     for (auto o : objects)
         o->render(renderWindow);

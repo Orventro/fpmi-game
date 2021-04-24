@@ -5,6 +5,7 @@
 #include "World.h"
 #include <vector>
 #include <set>
+#include <deque>
 
 class Army
 {
@@ -17,6 +18,8 @@ private:
     bool animation = 0;
     const int id;
     int gold = START_GOLD;
+    std::deque<sf::Vector2f> path;
+
     sf::CircleShape attackRad, moveRad;
 
 public:
@@ -27,12 +30,14 @@ public:
     void newMove();
     void endMove();
     bool recruit(sf::Vector2f point, int unitType);
-    void action(Unit* u, sf::Vector2f point);
     bool select(sf::Vector2f point);
     bool unselect();
     bool isAnimating() const;
     void giveGold(int);
     int getGold() const;
+    void attack(Unit* u);
+    void moveTo(std::deque<sf::Vector2f> path, float newEnergy);
+    Unit* getSelectedUnit() const;
     int getId();
     const set<Unit*>* getUnits() const;
 

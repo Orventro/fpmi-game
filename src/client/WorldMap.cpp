@@ -1,17 +1,27 @@
 #include "WorldMap.h"
 
 WorldMap::WorldMap(size_t size_h, size_t size_w, size_t step_h, size_t step_w, size_t _sprite_size, time_t seed) :
-    townRadius(TOWN_RADIUS, 32)
+    townRadius(TOWN_RADIUS, 32),
+    height(size_h),
+    width(size_w),
+    step_node_h(step_h),
+    step_node_w(step_w)
 {
-    height = size_h;
-    width = size_w;
-    step_node_h = step_h;
-    step_node_w = step_w;
     townRadius.setOrigin(sf::Vector2f(TOWN_RADIUS, TOWN_RADIUS));
     townRadius.setFillColor(TOWN_RADIUS_COLOR);
 
     std::vector<std::vector<double>> block_seeds_color(height, std::vector<double>(width, -1.0));
     type_block.resize(height, std::vector<unsigned int>(width));
+
+    distanceMatr.resize(height*width);
+    borderPixels = new uint8_t[width * height * 4];
+    for(int x = 0; x < width; x++){
+        for(int y = 0; y < height; y++){
+            borderPixels[(y*width+x)*4] = 97;
+            borderPixels[(y*width+x)*4+1] = 232;
+            borderPixels[(y*width+x)*4+2] = 210;
+        }
+    }
 
     perlin_noise P(seed, step_node_h, step_node_w);
     P.generation(block_seeds_color);
@@ -19,8 +29,8 @@ WorldMap::WorldMap(size_t size_h, size_t size_w, size_t step_h, size_t step_w, s
     painter PA(90, 115, block_seeds_color);
     PA.set_type_block(block_seeds_color, type_block);
 
-    uint8_t *pixels = new uint8_t[width * height * 4];
-    this->image_map.create(width, height, pixels);
+    mapPixels = new uint8_t[width * height * 4];
+    this->image_map.create(width, height, mapPixels);
 }
 
 WorldMap::~WorldMap()
@@ -31,8 +41,8 @@ WorldMap::~WorldMap()
 
 void WorldMap::render()
 {
-    for (uint x = 0; x < width; ++x)
-        for (uint y = 0; y < height; ++y)
+    for (uint y = 0; y < height; ++y)
+        for (uint x = 0; x < width; ++x)
             image_map.setPixel(x, y, TERRAIN_COLORS[type_block[y][x]]);
     
     this->create_towns();
@@ -40,7 +50,114 @@ void WorldMap::render()
     mapSprite.setTexture(mapTexture);
 }
 
-void WorldMap::draw(sf::RenderWindow &window, const sf::Vector2f center, bool draw_town_radius)
+const int propSize = 5;
+// propagate distance to neighbors
+inline void WorldMap::prop(const int xs, const int ys){
+    float d = distanceMatr[ys*width+xs];
+    if(d == 0)
+        return ;
+    for(int y = max(0, ys-propSize); y <= min((int)height-1, ys+propSize); y++) {
+        for(int x = max(0, xs-propSize); x <= min((int)width-1, xs+propSize); x++) {
+            distanceMatr[y*width+x] = max(distanceMatr[y*width+x], d - hypotf(x-xs,y-ys)*
+            (TERRAIN_OBSTRUCTION[type_block[ys][xs]] + TERRAIN_OBSTRUCTION[type_block[y][x]])/2);
+        }
+    }
+}
+
+const int borderWidth = 4;
+// determine border
+inline bool WorldMap::isBorder(const int xs, const int ys){
+    float d = distanceMatr[ys*width+xs];
+    if(d == 0)
+        return 0;
+    for(int y = max(0, ys-borderWidth); y <= min((int)height-1, ys+borderWidth); y++)
+        for(int x = max(0, xs-borderWidth); x <= min((int)width-1, xs+borderWidth); x++) 
+            if(distanceMatr[y*width+x] == 0)
+                return 1;
+    return 0;
+}
+
+void WorldMap::renderBorder(sf::Vector2u start, const float dist)
+{
+    const int sx = start.x, sy = start.y;
+    if(sx >= width | sy >= height | sx < 0 | sy < 0)
+        return ;
+    for(int y = 0; y < height; y++)
+        for(int x = 0; x < width; x++)
+            distanceMatr[y*width+x] = 0;
+    distanceMatr[sy*width+sx] = dist;
+    for(int d = 0; d < min(max(width, height), (size_t)dist+2); d++){
+        if(sx-d >= 0) 
+            for(int y = max(0, sy-d); y < min((int)height, sy+d+1); y++)
+                prop(sx-d, y);
+        if(sy+d < height)
+            for(int x = max(0, sx-d); x <= min((int)width, sx+d+1); x++)
+                prop(x, sy+d);
+        if(sy-d >= 0)
+            for(int x = max(0, sx-d); x <= min((int)width, sx+d+1); x++)
+                prop(x, sy-d);
+        if(sx+d < width) 
+            for(int y = max(0, sy-d); y < min((int)height, sy+d+1); y++)
+                prop(sx+d, y);
+    }
+    borderImage.create(width, height, borderPixels);
+
+    sf::Color cb(255, 255, 255, 255);
+    sf::Color ci(255, 255, 255, 100);
+
+    for (uint y = 0; y < height; ++y) {
+        for (uint x = 0; x < width; ++x) {
+            if(isBorder(x, y))
+                borderImage.setPixel(x, y, cb);
+            else if(distanceMatr[y*width+x] > 0)
+                borderImage.setPixel(x, y, ci);
+            else
+                borderImage.setPixel(x, y, sf::Color::Transparent);
+        }
+    }
+    
+    borderTexture.loadFromImage(borderImage);
+    borderSprite.setTexture(borderTexture);
+    borderSprite.setOrigin({0,0});
+    borderSprite.setPosition({0,0});
+}
+
+inline bool WorldMap::moveBackwards(int &xs, int &ys){
+    float md = distanceMatr[ys*width+xs];
+    int bx = xs, by = ys;
+    for(int y = max(0, ys-propSize); y <= min((int)height-1, ys+propSize); y++) {
+        for(int x = max(0, xs-propSize); x <= min((int)width-1, xs+propSize); x++) {
+            if(distanceMatr[y*width+x] > md)
+            {
+                md = distanceMatr[y*width+x];
+                bx = x;
+                by = y;
+            }
+        }
+    }
+    if(xs == bx & ys == by)
+        return 0;
+    xs = bx;
+    ys = by;
+    return 1;
+}
+
+std::pair<std::deque<sf::Vector2f>, float> WorldMap::getPath(sf::Vector2f point){
+    int x = point.x, y = point.y;
+    if(x < 0 | x >= width | y < 0 | y >= width) // OUB
+        return {{}, 0};
+    float d = distanceMatr[y*width+x];
+    if(d == 0) // Can't get there
+        return {{}, 0};
+    std::deque<sf::Vector2f> ans;
+    ans.push_back({(float)x, (float)y});
+    while(moveBackwards(x, y)) 
+        if(norm(ans.back() - sf::Vector2f(x, y)) > 100)
+            ans.push_back({(float)x, (float)y});
+    return {ans, d};
+}
+
+void WorldMap::draw(sf::RenderWindow &window, const sf::Vector2f center, bool draw_town_radius, bool draw_movement_border)
 {
     window.draw(mapSprite);
     for (Town *t : towns) {
@@ -50,6 +167,8 @@ void WorldMap::draw(sf::RenderWindow &window, const sf::Vector2f center, bool dr
             window.draw(townRadius);
         }
     }
+    if(draw_movement_border)
+        window.draw(borderSprite);
 }
 
 bool WorldMap::check_distance_town(const sf::Vector2f coord)

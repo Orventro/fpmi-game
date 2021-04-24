@@ -3,6 +3,7 @@
 #include "consts.h"
 #include "VisibleObject.h"
 #include "Bar.h"
+#include <deque>
 
 class Unit : public VisibleObject 
 {
@@ -11,14 +12,14 @@ private:
     float energy;
     float health, maxHealth, speed, damage, maxEnergy, attackRadius;
     sf::CircleShape shape;
+    std::deque<sf::Vector2f> path;
     Bar hpbar;
 
 public:
-    sf::Vector2f destination;
     Unit(sf::Vector2f _position, float _health, float _speed, float _damage, float _maxEnergy, float _attackRadius, sf::Color color);
 
     void newMove();
-    bool moveTo(sf::Vector2f point);
+    void moveTo(std::deque<sf::Vector2f> point, float newEnrgy);
     bool attack(Unit* u);
     void attacked(float dmg);
     void render(sf::RenderWindow& window);

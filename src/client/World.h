@@ -27,7 +27,7 @@ public:
 
     World(sf::Vector2f winSize = DEFAULT_WINDOW_SIZE, sf::Vector2f _size = WORLD_SIZE);
 
-    void render(sf::RenderWindow& window, float delta, bool drawTownRadius);
+    void render(sf::RenderWindow& window, float delta, bool drawTownRadius, bool drawMovementBorder);
     void updateWindowSize(sf::Vector2f);
     const vector<Army*>& getArmies() const;
     void onResized(sf::Vector2f);

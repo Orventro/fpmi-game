@@ -2,7 +2,6 @@
 
 Unit::Unit(sf::Vector2f _position, float _health, float _speed, float _damage, float _maxEnergy, float _attackRadius, sf::Color color) :
     VisibleObject(_position),
-    destination(_position),
     health(_health),
     maxHealth(_health),
     speed(_speed),
@@ -22,14 +21,10 @@ void Unit::newMove()
     energy = maxEnergy;
 }
 
-bool Unit::moveTo(sf::Vector2f point)
+void Unit::moveTo(std::deque<sf::Vector2f> _path, float newEnergy)
 {
-    if(norm(point - position) <= energy*energy) {
-        destination = point;
-        energy -= sqrt(norm(point - position));
-        return 1;
-    }
-    return 0;
+    path = _path;
+    energy = newEnergy;
 }
 
 void Unit::attacked(float dmg) {
@@ -52,25 +47,35 @@ bool Unit::attack(Unit* u)
     return 0;
 }
 
-bool Unit::update(float delta)
-{
-    if(destination == position)
+bool Unit::update(float dt)
+{ 
+    if(path.size() == 0)
         return alive;
-    
-    if(delta*delta*speed*speed >= norm(destination - position)) {
-        position = destination;
-    } else {
-        float ratio = delta*speed/sqrt(norm(destination - position));
-        position = position * (1 - ratio) + destination * ratio;
+
+    float dl = dt*speed;
+
+    float ds = vlen(path.back() - position);
+
+    while(dl >= ds)
+    {
+        dl -= ds;
+        position = path.back();
+        path.pop_back();
+        if(path.size() == 0)
+            break;
+        ds = vlen(path.back() - position);
     }
 
+    if(path.size())
+        position = position * (1 - dl/ds) + path.back() * dl/ds;
+    
     hpbar.moveTo(position + HP_BAR_OFFSET);
 
     return alive;
 }
 
 void Unit::finishAnimation(){
-    position = destination;
+    position = path.back();
 }
 
 void Unit::render(sf::RenderWindow& window)
@@ -82,7 +87,7 @@ void Unit::render(sf::RenderWindow& window)
 
 bool Unit::isAnimating() const
 {
-    return destination != position;
+    return path.size();
 }
 
 float Unit::getEnergy() const

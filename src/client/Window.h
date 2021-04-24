@@ -27,6 +27,7 @@ private:
     void unit_selected(sf::Event); // unit selected, waiting for command to it
 
     void (GameWindow::*state)(sf::Event);
+    // std::function<void(sf::Event)> state;
 
 public:
     GameWindow(sf::Vector2f size = DEFAULT_WINDOW_SIZE);

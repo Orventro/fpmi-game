@@ -31,17 +31,17 @@ void Army::render(sf::RenderWindow& window)
     for(Unit* u : units) 
         u->render(window);
     
-    if(selected) {
-        moveRad.setRadius(selected->getEnergy());
-        moveRad.setOrigin(selected->getEnergy(), selected->getEnergy());
-        moveRad.setPosition(selected->getPosition());
-        window.draw(moveRad);
+    // if(selected) {
+    //     moveRad.setRadius(selected->getEnergy());
+    //     moveRad.setOrigin(selected->getEnergy(), selected->getEnergy());
+    //     moveRad.setPosition(selected->getPosition());
+    //     window.draw(moveRad);
 
-        if(selected->getEnergy() >= 400) {
-            window.draw(attackRad);
-            attackRad.setPosition(selected->getPosition());
-        }
-    }
+    //     if(selected->getEnergy() >= 400) {
+    //         window.draw(attackRad);
+    //         attackRad.setPosition(selected->getPosition());
+    //     }
+    // }
 }
 
 void Army::newMove()
@@ -74,21 +74,20 @@ bool Army::recruit(sf::Vector2f point, int unitType) {
     return 0;
 }
 
-void Army::action(Unit* u, sf::Vector2f point)
-{  
-    if(selected == 0)
-        return;
-    if(u == 0) 
-    {
-        if(selected->moveTo(point)) {
-            animation = 1;
-            Town* t = home->seizeTown(point);
-            if(t)
-                t->setOwner(this);
-        }
-    } 
-    else
-        selected->attack(u);
+void Army::attack(Unit* u)
+{
+    if(selected) selected->attack(u);
+}
+
+void Army::moveTo(std::deque<sf::Vector2f> _path, float newEnergy)
+{
+    if(selected)
+        selected->moveTo(_path, newEnergy);
+}
+
+Unit* Army::getSelectedUnit() const 
+{
+    return selected;
 }
 
 bool Army::select(sf::Vector2f point) 

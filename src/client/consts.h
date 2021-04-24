@@ -20,6 +20,8 @@ using std::set;
 using std::cout;
 using std::endl;
 using std::vector;
+using std::min;
+using std::max;
 using timestamp = std::chrono::_V2::system_clock::time_point;
 
 const sf::Vector2f UP   ( 0, -1);
@@ -31,14 +33,11 @@ const float CAMERA_SPEED = 5;
 
 
 const sf::Vector2f DEFAULT_WINDOW_SIZE(800, 600);
-// const int windowWidth = 1080;
-// const int windowHeight = 720;
 
-// const sf::Vector2f windowDims(windowWidth, windowHeight);
-
-const std::chrono::milliseconds RELOAD_TIME(200);
+// helpful functions defined in SupportFunctions.cpp
 
 float norm(sf::Vector2f v);
+float vlen(sf::Vector2f v);
 std::ostream& operator<<(std::ostream& os, const sf::Vector2f& v);
 
 const sf::Color ARMY_COLORS[] = {sf::Color::Blue, sf::Color::Red, sf::Color::Yellow, sf::Color::Green};
@@ -53,6 +52,7 @@ const sf::Color MOVE_COLOR(160, 220, 10, 50);
 const sf::Color ATTACK_COLOR(240, 50, 10, 70);
 const sf::Color GOLD_COLOR(247, 235, 10, 255);
 const sf::Color TOWN_RADIUS_COLOR(199, 132, 219, 100);
+const sf::Color MOVEMENT_BORDER_COLOR(97, 232, 210, 200);
 
 const int FPS = 60;
 
@@ -72,7 +72,9 @@ const unsigned int step_node_w = 100;
 const size_t rand_denominator =  10000;
 const size_t sprite_size = size_elemantary_block_in_pixel * pixel_size;
 
+// void, sea, sand, grass
 const sf::Color TERRAIN_COLORS[] = {sf::Color::Black, sf::Color(0, 128, 255), sf::Color::Yellow, sf::Color::Green};
+const float TERRAIN_OBSTRUCTION[] = {0, 1e3, 2, 1};
 
 const int START_GOLD = 0;
 

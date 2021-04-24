@@ -55,7 +55,7 @@ int GameWindow::render()
 
     window.clear();
 
-    world->render(window, 1.0f / FPS, state == &GameWindow::unit_selected | state == &GameWindow::place_new_unit);
+    world->render(window, 1.0f / FPS, state == &GameWindow::unit_selected | state == &GameWindow::place_new_unit, state == &GameWindow::unit_selected);
 
     sf::View v = window.getView();
     v.setCenter({0,0});
