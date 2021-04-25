@@ -5,12 +5,6 @@
 #include <functional>
 #include <thread>
 #include <list>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string>
 #include <errno.h>
 #include <netdb.h>
@@ -22,6 +16,25 @@
 #include <utility>
 #include <iostream>
 
+#ifdef _WIN32 // Windows 32 и 64
+
+#include <WinSock2.h>
+typedef SOCKET socket_type;
+typedef SOCKADDR_IN sockaddr_in;
+
+#else // unix
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <netinet/in.h>
+#include <unistd.h>
+typedef int socket_type;
+
+#endif
+
+
 #define PORT "3490"  // порт на сервере, к которому будут подключаться пользователи. Порт 3490, т.к. это стандартный порт для многопользовательских игр
 
 #define BACKLOG 10	 // сколько ожидающих соединений будут храниться в очереди
@@ -30,18 +43,21 @@
 
 class Tcp_Server {
 public :
-     Tcp_Server ();
+    Tcp_Server ();
     ~Tcp_Server();
     void start_Server();
 	void close_Server();
     void restart_Server();
     void listen_Server();
     void create_connection_for_two_players_Server();
-    //void recv_Server();
-    //void send_Server();
+    std::string recv_Server(socket_type sockfd);
+    void send_Server (socket_type sockfd, std::string s);
 private :
-    int sockfd; // сокет для listen
-    int new_fd[2]; // сокет для  accept. new_fd[0] - первый пользователь. new_fd[1] - второй пользователь
+#ifdef _WIN32 // Windows 32 и 64
+    WSAData w_data;
+#endif
+    socket_type sockfd; // сокет для listen
+    socket_type new_fd[2]; // сокет для  accept. new_fd[0] - первый пользователь. new_fd[1] - второй пользователь
     int yes; // для функции setsockopt, которая позволит повторно использовать порт при перезапуске сервера. Это необходимо,тк порт при перезапуске будет занят прошлым сокетом
     std::vector <std::pair <sockaddr_storage , sockaddr_storage >> pairs_of_players; // созданные пары
 };
@@ -142,6 +158,7 @@ void Tcp_Server::listen_Server() {
         perror("server: not initialized soket for listening\n");
         exit(1);
     }
+
     // "слушаем" входящие соединения на сокете для слушанья, пока их не примут с помощью accept
 	if (listen(sockfd, BACKLOG) == -1) {
 		perror("listen");
@@ -151,10 +168,10 @@ void Tcp_Server::listen_Server() {
 	printf("server: waiting for connections...\n");
 }
 
-std::string recv_Server(int sockfd) {
+std::string Tcp_Server::recv_Server(int sockfd) {
     std::string out;
     char buf_to_send[MAXDATASIZE];
-    if (recv(sockfd, buf_to_send, MAXDATASIZE-1, 0) == -1) {
+    if (recv(sockfd, buf_to_send, MAXDATASIZE, 0) == -1) {
         perror("client: recv");
         exit(1);
     }
@@ -162,7 +179,7 @@ std::string recv_Server(int sockfd) {
     return out;
 }
 
-void send_Server(int sockfd, std::string s) {
+void Tcp_Server::send_Server(int sockfd, std::string s) {
     char buf_to_send[MAXDATASIZE];
     strcpy(buf_to_send,s.c_str());
     if (send(sockfd, buf_to_send, MAXDATASIZE, 0) == -1) {
@@ -200,7 +217,7 @@ void Tcp_Server::create_connection_for_two_players_Server() {
 
     pairs_of_players.push_back(std::make_pair(addr1,addr2));
 
-    // ... (в будущем тут будет fork и многопоточность)
+    // ... (тут будет fork и многопоточность)
 
     // закрываем сокет для слушанья, т.к. он нам больше не нужен для созданной пары
     close(sockfd);
@@ -212,15 +229,15 @@ void Tcp_Server::create_connection_for_two_players_Server() {
         turn_number++;
         to_send.clear();
         // чей ход, у того есть право на rw, у второго есть право только на r. new_fd[1-step_number%2] - право на rw
-        send_Server(new_fd[1-(turn_number%2)], "New Step; you have rights to read and write");
-        send_Server(new_fd[turn_number%2], "New Step; you have rights only to read");
+        (*this).send_Server(new_fd[1-(turn_number%2)], "New Step; you have rights to read and write");
+        (*this).send_Server(new_fd[turn_number%2], "New Step; you have rights only to read");
 
         // пока первый не скажет, что он закончил(finished), он может писать. Если он скажет exit, то чат закрываем
         while (to_send != "!finish" && to_send != "!exit") {
             // сначала читаем данные из буфера, которые передал пользователь с правом rw
-            to_send = recv_Server(new_fd[1-(turn_number%2)]);
+            to_send = (*this).recv_Server(new_fd[1-(turn_number%2)]);
             // теперь передаем их пользователю, который имеет только право на чтение
-            send_Server(new_fd[turn_number%2], to_send);
+            (*this).send_Server(new_fd[turn_number%2], to_send);
         }
     }
 
