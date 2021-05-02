@@ -3,7 +3,8 @@
 int main()
 {
     GameWindow window;
-    int frame=0;
+    cout << "ok!\n";
+    // int frame=0;
 
     while(!window.render()) {
         // cout << frame++ << endl;

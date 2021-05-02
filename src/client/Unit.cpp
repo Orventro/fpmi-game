@@ -7,8 +7,8 @@ Unit::Unit(sf::Vector2f _position, float _health, float _speed, float _damage, f
     speed(_speed),
     damage(_damage),
     maxEnergy(_maxEnergy),
-    shape(20, 4),
     attackRadius(_attackRadius),
+    shape(20, 4),
     hpbar(_position + HP_BAR_OFFSET, HP_BAR_SIZE, HP_BACK_COL, HP_FRONT_COL)
 {
     shape.setFillColor(color);
@@ -93,8 +93,4 @@ bool Unit::isAnimating() const
 float Unit::getEnergy() const
 {
     return energy;
-}
-
-Unit::~Unit()
-{
 }

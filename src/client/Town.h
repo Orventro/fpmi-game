@@ -4,8 +4,7 @@
 #include <iostream>
 #include "Resources.h"
 #include "Army.h"
-
-class Army; // задекларирован здесь, чтобы не возникало ошибки, определение класса в его файле
+#include "consts.h"
 
 class Town : public VisibleObject
 {
@@ -19,6 +18,6 @@ public:
     ~Town();
     Army *get_owner() const;
     void setOwner(Army *pl);
-    void render(sf::RenderWindow &window) const;
+    void render(sf::RenderWindow &window);
     bool isProtected() const;
 };

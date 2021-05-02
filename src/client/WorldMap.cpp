@@ -1,11 +1,11 @@
 #include "WorldMap.h"
 
-WorldMap::WorldMap(size_t size_h, size_t size_w, size_t step_h, size_t step_w, size_t _sprite_size, time_t seed) :
-    townRadius(TOWN_RADIUS, 32),
+WorldMap::WorldMap(int size_h, int size_w, int step_h, int step_w, time_t seed) :
     height(size_h),
     width(size_w),
     step_node_h(step_h),
-    step_node_w(step_w)
+    step_node_w(step_w),
+    townRadius(TOWN_RADIUS, 32)
 {
     townRadius.setOrigin(sf::Vector2f(TOWN_RADIUS, TOWN_RADIUS));
     townRadius.setFillColor(TOWN_RADIUS_COLOR);
@@ -23,6 +23,12 @@ WorldMap::WorldMap(size_t size_h, size_t size_w, size_t step_h, size_t step_w, s
         }
     }
 
+    hypot_cache = vector<vector<float>>(propSize+1, vector<float>(propSize+1));
+
+    for(int i = 0; i <= propSize; i++)
+        for(int j = 0; j <= propSize; j++)
+            hypot_cache[i][j] = hypotf(i, j);
+
     perlin_noise P(seed, step_node_h, step_node_w);
     P.generation(block_seeds_color);
 
@@ -30,7 +36,7 @@ WorldMap::WorldMap(size_t size_h, size_t size_w, size_t step_h, size_t step_w, s
     PA.set_type_block(block_seeds_color, type_block);
 
     mapPixels = new uint8_t[width * height * 4];
-    this->image_map.create(width, height, mapPixels);
+    this->image_map.create((uint)width, (uint)height, mapPixels);
 }
 
 WorldMap::~WorldMap()
@@ -41,8 +47,8 @@ WorldMap::~WorldMap()
 
 void WorldMap::render()
 {
-    for (uint y = 0; y < height; ++y)
-        for (uint x = 0; x < width; ++x)
+    for (int y = 0; y < height; ++y)
+        for (int x = 0; x < width; ++x)
             image_map.setPixel(x, y, TERRAIN_COLORS[type_block[y][x]]);
     
     this->create_towns();
@@ -50,16 +56,16 @@ void WorldMap::render()
     mapSprite.setTexture(mapTexture);
 }
 
-const int propSize = 5;
 // propagate distance to neighbors
 inline void WorldMap::prop(const int xs, const int ys){
-    float d = distanceMatr[ys*width+xs];
+    const float d = distanceMatr[ys*width+xs];
     if(d == 0)
         return ;
-    for(int y = max(0, ys-propSize); y <= min((int)height-1, ys+propSize); y++) {
-        for(int x = max(0, xs-propSize); x <= min((int)width-1, xs+propSize); x++) {
-            distanceMatr[y*width+x] = max(distanceMatr[y*width+x], d - hypotf(x-xs,y-ys)*
-            (TERRAIN_OBSTRUCTION[type_block[ys][xs]] + TERRAIN_OBSTRUCTION[type_block[y][x]])/2);
+    for(int y = max(0, ys-propSize); y <= min(height-1, ys+propSize); y++) {
+        for(int x = max(0, xs-propSize); x <= min(width-1, xs+propSize); x++) {
+            distanceMatr[y*width+x] = max(distanceMatr[y*width+x], d - hypot_cache[abs(x-xs)][abs(y-ys)]*
+            TERRAIN_OBSTRUCTION[type_block[y][x]]);
+            // TERRAIN_OBSTRUCTION[type_block[ys][xs]]);
         }
     }
 }
@@ -67,11 +73,11 @@ inline void WorldMap::prop(const int xs, const int ys){
 const int borderWidth = 4;
 // determine border
 inline bool WorldMap::isBorder(const int xs, const int ys){
-    float d = distanceMatr[ys*width+xs];
+    const float d = distanceMatr[ys*width+xs];
     if(d == 0)
         return 0;
-    for(int y = max(0, ys-borderWidth); y <= min((int)height-1, ys+borderWidth); y++)
-        for(int x = max(0, xs-borderWidth); x <= min((int)width-1, xs+borderWidth); x++) 
+    for(int y = max(0, ys-borderWidth); y <= min(height-1, ys+borderWidth); y++)
+        for(int x = max(0, xs-borderWidth); x <= min(width-1, xs+borderWidth); x++) 
             if(distanceMatr[y*width+x] == 0)
                 return 1;
     return 0;
@@ -80,24 +86,24 @@ inline bool WorldMap::isBorder(const int xs, const int ys){
 void WorldMap::renderBorder(sf::Vector2u start, const float dist)
 {
     const int sx = start.x, sy = start.y;
-    if(sx >= width | sy >= height | sx < 0 | sy < 0)
+    if((sx >= width) | (sy >= height) | (sx < 0) | (sy < 0))
         return ;
     for(int y = 0; y < height; y++)
         for(int x = 0; x < width; x++)
             distanceMatr[y*width+x] = 0;
     distanceMatr[sy*width+sx] = dist;
-    for(int d = 0; d < min(max(width, height), (size_t)dist+2); d++){
+    for(int d = 0; d < min(max(width, height), (int)dist+2); d++){
         if(sx-d >= 0) 
-            for(int y = max(0, sy-d); y < min((int)height, sy+d+1); y++)
+            for(int y = max(0, sy-d); y < min(height, sy+d+1); y++)
                 prop(sx-d, y);
         if(sy+d < height)
-            for(int x = max(0, sx-d); x <= min((int)width, sx+d+1); x++)
+            for(int x = max(0, sx-d); x <= min(width, sx+d+1); x++)
                 prop(x, sy+d);
         if(sy-d >= 0)
-            for(int x = max(0, sx-d); x <= min((int)width, sx+d+1); x++)
+            for(int x = max(0, sx-d); x <= min(width, sx+d+1); x++)
                 prop(x, sy-d);
         if(sx+d < width) 
-            for(int y = max(0, sy-d); y < min((int)height, sy+d+1); y++)
+            for(int y = max(0, sy-d); y < min(height, sy+d+1); y++)
                 prop(sx+d, y);
     }
     borderImage.create(width, height, borderPixels);
@@ -105,8 +111,8 @@ void WorldMap::renderBorder(sf::Vector2u start, const float dist)
     sf::Color cb(255, 255, 255, 255);
     sf::Color ci(255, 255, 255, 100);
 
-    for (uint y = 0; y < height; ++y) {
-        for (uint x = 0; x < width; ++x) {
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
             if(isBorder(x, y))
                 borderImage.setPixel(x, y, cb);
             else if(distanceMatr[y*width+x] > 0)
@@ -125,8 +131,8 @@ void WorldMap::renderBorder(sf::Vector2u start, const float dist)
 inline bool WorldMap::moveBackwards(int &xs, int &ys){
     float md = distanceMatr[ys*width+xs];
     int bx = xs, by = ys;
-    for(int y = max(0, ys-propSize); y <= min((int)height-1, ys+propSize); y++) {
-        for(int x = max(0, xs-propSize); x <= min((int)width-1, xs+propSize); x++) {
+    for(int y = max(0, ys-propSize); y <= min(height-1, ys+propSize); y++) {
+        for(int x = max(0, xs-propSize); x <= min(width-1, xs+propSize); x++) {
             if(distanceMatr[y*width+x] > md)
             {
                 md = distanceMatr[y*width+x];
@@ -135,7 +141,7 @@ inline bool WorldMap::moveBackwards(int &xs, int &ys){
             }
         }
     }
-    if(xs == bx & ys == by)
+    if((xs == bx) & (ys == by))
         return 0;
     xs = bx;
     ys = by;
@@ -144,7 +150,7 @@ inline bool WorldMap::moveBackwards(int &xs, int &ys){
 
 std::pair<std::deque<sf::Vector2f>, float> WorldMap::getPath(sf::Vector2f point){
     int x = point.x, y = point.y;
-    if(x < 0 | x >= width | y < 0 | y >= width) // OUB
+    if((x < 0) | (x >= width) | (y < 0) | (y >= width)) // OUB
         return {{}, 0};
     float d = distanceMatr[y*width+x];
     if(d == 0) // Can't get there
@@ -157,7 +163,7 @@ std::pair<std::deque<sf::Vector2f>, float> WorldMap::getPath(sf::Vector2f point)
     return {ans, d};
 }
 
-void WorldMap::draw(sf::RenderWindow &window, const sf::Vector2f center, bool draw_town_radius, bool draw_movement_border)
+void WorldMap::draw(sf::RenderWindow &window, bool draw_town_radius, bool draw_movement_border)
 {
     window.draw(mapSprite);
     for (Town *t : towns) {
@@ -181,12 +187,12 @@ bool WorldMap::check_distance_town(const sf::Vector2f coord)
     return true;
 }
 
-bool WorldMap::check_distance_water(const sf::Vector2u &coord)
+bool WorldMap::check_distance_water(const sf::Vector2u coord)
 {
     int delta = 50;
-    for (size_t i = std::max(0, (int)((int)coord.x - delta)); i < std::min((int)width, (int)(coord.x + delta)); ++i)
+    for (int i = std::max(0, ((int)coord.x - delta)); i < std::min(width, ((int)coord.x + delta)); ++i)
     {
-        for (size_t j = std::max(0, (int)((int)coord.y - delta)); j < std::min((int)height, (int)(coord.y + delta)); ++j)
+        for (int j = std::max(0, ((int)coord.y - delta)); j < std::min(height, ((int)coord.y + delta)); ++j)
             if (1 == type_block[i][j])
                 return false;
     }
@@ -200,8 +206,8 @@ void WorldMap::create_one_town()
     while (!flag_stop)
     {
         int delta = 60;
-        size_t x = rand() % width;
-        size_t y = rand() % height;
+        int x = rand() % width;
+        int y = rand() % height;
 
         if (x < delta)
             x = delta;
@@ -227,7 +233,7 @@ void WorldMap::create_one_town()
 
 void WorldMap::create_towns()
 {
-    for (size_t i = 0; i < 40; ++i)
+    for (int i = 0; i < 40; ++i)
         WorldMap::create_one_town();
     for (auto it : towns)
         it->setOwner(0);

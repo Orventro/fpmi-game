@@ -5,9 +5,9 @@ World::World(sf::Vector2f winSize, sf::Vector2f _size) :
                             size(_size),
                             camera(sf::FloatRect(0, 0, winSize.x, winSize.y))
 {
-    map = new WorldMap(_size.y, _size.x, 100, 100, size_elemantary_block_in_pixel * pixel_size, 1);
-    armies.push_back(new Army(this, 0));
-    armies.push_back(new Army(this, 1));
+    map = new WorldMap(_size.y, _size.x, 100, 100, 1);
+    armies.push_back(new Army(0));
+    armies.push_back(new Army(1));
     activeArmy = armies[0];
     activeArmy->newMove();
     map->render();
@@ -120,10 +120,7 @@ void World::render(sf::RenderWindow &renderWindow, float dt, bool drawTownRadius
 
     moveCamera(renderWindow, dt);
     
-    map->draw(renderWindow, {0, 0}, drawTownRadius, drawMovementBorder);
-
-    for (auto o : objects)
-        o->render(renderWindow);
+    map->draw(renderWindow, drawTownRadius, drawMovementBorder);
 
     for (auto a : armies)
         a->render(renderWindow);
@@ -151,7 +148,7 @@ bool World::recruit(sf::Vector2f point, int unitType)
     
     // проверяем, если рядом с выбранной точкой есть город, принадлежащий этой армии
     for(Town *t : map->getTowns()) 
-        if(norm(t->getPosition() - point) < TOWN_RADIUS2 & t->get_owner() == activeArmy) 
+        if((norm(t->getPosition() - point) < TOWN_RADIUS2) & (t->get_owner() == activeArmy)) 
                 return activeArmy->recruit(point, unitType);
     return 0;
 }
@@ -159,9 +156,8 @@ bool World::recruit(sf::Vector2f point, int unitType)
 World::~World()
 {
     for (auto a : armies)
-    {
         delete a;
-    }
+    delete map;
 }
 
 Town* World::seizeTown(sf::Vector2f point){

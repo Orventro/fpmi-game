@@ -33,7 +33,7 @@ void Town::setOwner(Army *player)
         sprite.setColor(ARMY_COLORS[player->getId()]);
 }
 
-void Town::render(sf::RenderWindow &window) const
+void Town::render(sf::RenderWindow &window) 
 {
     window.draw(sprite);
 }

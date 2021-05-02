@@ -1,10 +1,9 @@
 #include "Army.h"
 
-Army::Army(World *world, int _id) :
+Army::Army(int _id) :
     attackRad(50, 32),
     moveRad(500, 32),
-    id(_id),
-    home(world)
+    id(_id)
 {
     units.insert(new Unit(ARMY_POSITIONS[id], 100, 300, 50, 500, 50, ARMY_COLORS[id]));
     moveRad.setFillColor(MOVE_COLOR);
@@ -63,7 +62,8 @@ void Army::endMove()
     // cout << id << " end move\n";
 }
 
-bool Army::recruit(sf::Vector2f point, int unitType) {
+bool Army::recruit(sf::Vector2f point, int unitType) 
+{
     if(unitType == 1) {
         if(gold >= 20){
             gold -= 20;

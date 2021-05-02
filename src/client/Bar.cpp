@@ -2,8 +2,9 @@
 
 Bar::Bar(sf::Vector2f _position, sf::Vector2f size, sf::Color frontCol, sf::Color backCol) :
     VisibleObject(_position),
-    front(size),
-    back(size)
+    back(size),
+    front(size)
+   
 {
     front.setFillColor(frontCol);
     back.setFillColor(backCol);

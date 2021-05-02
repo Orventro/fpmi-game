@@ -6,7 +6,7 @@ RESOURCES_H = ./src/client/Resources.h
 
 client:
 	mkdir -p bin
-	g++ -std=c++17 -o $(CLIENT_BIN_PATH) $(FLAGS) $(CLIENT_FILES) -I/src/client/ -I/usr/include/SFML $(SFML_LIBS) 
+	g++ -std=c++17 -o $(CLIENT_BIN_PATH) -O3 $(FLAGS) $(CLIENT_FILES) -I/src/client/ -I/usr/include/SFML $(SFML_LIBS) 
 
 resources:
 	rm -f $(RESOURCES_H)

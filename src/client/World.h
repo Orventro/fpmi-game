@@ -12,13 +12,12 @@
 
 class World{
 private:
-    set<VisibleObject*> objects;
+    sf::Vector2f size, windowSize;
     vector<Army*> armies;
     Army* activeArmy;
     sf::View camera;
     WorldMap* map;
     int turn = 0;
-    sf::Vector2f size, windowSize;
 
     void update_town ();
     void moveCamera(sf::RenderWindow& renderWindow, float delta);

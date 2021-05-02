@@ -11,19 +11,17 @@ class Army
 {
 
 private:
+    sf::CircleShape attackRad, moveRad;
+    const int id;
     set<Unit*> units;
     Unit* selected = 0;
-    World* home;
     bool active = 0;
     bool animation = 0;
-    const int id;
     int gold = START_GOLD;
     std::deque<sf::Vector2f> path;
 
-    sf::CircleShape attackRad, moveRad;
-
 public:
-    Army(World* world, int id); // id in [0, 4)
+    Army(int id); // id in [0, 4)
 
     void render(sf::RenderWindow& window);
     void update(float delta);

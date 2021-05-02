@@ -28,5 +28,4 @@ public:
     void finishAnimation();
     float getEnergy() const;
 
-    ~Unit();
 };
