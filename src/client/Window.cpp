@@ -5,13 +5,21 @@ GameWindow::GameWindow(sf::Vector2f size) : window(sf::VideoMode(size.x, size.y)
     cout << "ok1\n";
     world = new World(size);
     window.setFramerateLimit(FPS);
-    state = &GameWindow::neutral;
+    setState(STATE_NEUTRAL);
 
     if (!defaultFont.loadFromMemory(__res_fonts_Oswald_ttf, __res_fonts_Oswald_ttf_len))
     {
         cout << "Error! Cannot load font from memory!\n";
         exit(1);
     }
+
+    hint.setFont(defaultFont);
+    hint.setFillColor(sf::Color(29, 30, 31, 255));
+    hint.setPosition(sf::Vector2f(-window.getSize().x, window.getSize().y)*0.5f + HINT_OFFSET);
+    hint.setCharacterSize(20);
+
+    for(int i = 0; i < 4; i++)
+        hints[STATE_CHOOSING] += std::to_string(i) + " (" + std::to_string(UNIT_COST[i]) + " gold), ";
 
     goldAmount.setString("GOLD: " + std::to_string(START_GOLD));
     goldAmount.setFillColor(GOLD_COLOR);
@@ -37,18 +45,20 @@ int GameWindow::render()
             window.close();
         else if (event.type == sf::Event::Resized) {
             world->onResized(sf::Vector2f(window.getSize()));
-            goldAmount.setPosition(sf::Vector2f(window.getSize())*0.5f + GOLD_OFFSET);
+            goldAmount.setPosition(sf::Vector2f(window.getSize().x, -(float)window.getSize().y)*0.5f + GOLD_OFFSET);
+            hint.setPosition(sf::Vector2f(-(float)window.getSize().x, window.getSize().y)*0.5f + HINT_OFFSET);
+            cout << hint.getPosition() << endl;
         }
         else if ((event.type == sf::Event::KeyPressed) & (event.key.code == sf::Keyboard::Space))
         {
             world->newMove();
             goldAmount.setString("GOLD: " + std::to_string(world->getGold()));
-            state = &GameWindow::neutral;
+            setState(STATE_NEUTRAL);
         }
         else if ((event.type == sf::Event::MouseButtonPressed) & (event.mouseButton.button == sf::Mouse::Right))
         {
             if (world->unselect())
-                state = &GameWindow::neutral;
+                setState(STATE_NEUTRAL);
         }
         else
             std::invoke(state, this, event); // C++17
@@ -62,10 +72,16 @@ int GameWindow::render()
     v.setCenter({0,0});
     window.setView(v);
     window.draw(goldAmount);
+    window.draw(hint);
 
     window.display();
 
     return 0;
+}
+
+void GameWindow::waiting(sf::Event event)
+{
+
 }
 
 void GameWindow::neutral(sf::Event event)
@@ -74,14 +90,12 @@ void GameWindow::neutral(sf::Event event)
     {
         sf::Vector2f mousePtr(event.mouseMove.y, event.mouseWheelScroll.x); // but why??? idk seems to be a bug of sfml
         if (world->selectUnit(mousePtr))
-        {
-            state = &GameWindow::unit_selected;
-        }
+            setState(STATE_SELECTED);
     }
 
     if ((event.type == sf::Event::KeyPressed) & (event.key.code == sf::Keyboard::N))
         if (world->unselect())
-            state = &GameWindow::choose_new_unit;
+            setState(STATE_CHOOSING);
 }
 
 void GameWindow::unit_selected(sf::Event event)
@@ -119,7 +133,7 @@ void GameWindow::choose_new_unit(sf::Event event)
 
     if ((event.type == sf::Event::KeyPressed) & ( current_type_unit != -1 ))
         if (world->unselect())
-            state = &GameWindow::place_new_unit;
+            setState(STATE_PLACING);
 }
 
 void GameWindow::place_new_unit(sf::Event event)
@@ -129,10 +143,16 @@ void GameWindow::place_new_unit(sf::Event event)
     {
         sf::Vector2f mousePtr(event.mouseMove.y, event.mouseWheelScroll.x);
         if (world->recruit(mousePtr, current_type_unit)) { // сейчас толко 1 тип 
-            state = &GameWindow::neutral;
+            setState(STATE_NEUTRAL);
             goldAmount.setString("GOLD: " + std::to_string(world->getGold()));
         }
     }
+}
+
+void GameWindow::setState(int state_id)
+{
+    state = states[state_id];
+    hint.setString(hints[state_id]);
 }
 
 GameWindow::~GameWindow()

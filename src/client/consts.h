@@ -63,6 +63,8 @@ const sf::Vector2f HP_BAR_OFFSET(0, 30);
 
 const sf::Vector2f WORLD_SIZE(2000, 2000);
 
+const int UNIT_COST[4] = {20, 40, 60, 100};
+
 const size_t size_elemantary_block_in_pixel = 2;
 const size_t pixel_size = 1.f;
 // const size_t size_screen_in_block_w =  std::ceil( ( (double) windowWidth) / ( size_elemantary_block_in_pixel ) );
@@ -74,11 +76,12 @@ const size_t sprite_size = size_elemantary_block_in_pixel * pixel_size;
 
 // void, sea, sand, grass
 const sf::Color TERRAIN_COLORS[] = {sf::Color::Black, sf::Color(0, 128, 255), sf::Color::Yellow, sf::Color::Green};
-const float TERRAIN_OBSTRUCTION[] = {0, 1e3, 2, 1};
+const float TERRAIN_OBSTRUCTION[] = {0, 5, 2, 1};
 
 const int START_GOLD = 0;
 
-const sf::Vector2f GOLD_OFFSET(-100, -30);
+const sf::Vector2f GOLD_OFFSET(-200, 10);
+const sf::Vector2f HINT_OFFSET(20, -30);
 
 // Радиус в котором город находится под влиянием его армии и не может быть захвачен. 
 // Также радиус, в котором может появится новый юнит из этого города.

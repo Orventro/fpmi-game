@@ -65,7 +65,6 @@ inline void WorldMap::prop(const int xs, const int ys){
         for(int x = max(0, xs-propSize); x <= min(width-1, xs+propSize); x++) {
             distanceMatr[y*width+x] = max(distanceMatr[y*width+x], d - hypot_cache[abs(x-xs)][abs(y-ys)]*
             TERRAIN_OBSTRUCTION[type_block[y][x]]);
-            // TERRAIN_OBSTRUCTION[type_block[ys][xs]]);
         }
     }
 }
