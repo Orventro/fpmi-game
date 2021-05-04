@@ -1,11 +1,11 @@
 #include "Army.h"
 
-Army::Army(int _id) :
+Army::Army(int _id, sf::Vector2f start) :
     attackRad(50, 32),
     moveRad(500, 32),
     id(_id)
-{
-    units.insert(new Unit(ARMY_POSITIONS[id],  1, 100, 300, 40, 150, 50, ARMY_COLORS[id] ));
+{           
+    units.insert(new Unit(  start ,  1, 100, 300, 40, 150, 50, ARMY_COLORS[id] ));
     moveRad.setFillColor(MOVE_COLOR);
     attackRad.setFillColor(ATTACK_COLOR);
     attackRad.setOrigin(50, 50);
