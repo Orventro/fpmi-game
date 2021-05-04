@@ -9,6 +9,7 @@ class Unit : public VisibleObject
 {
 private:
     bool alive = 1;
+    bool flag_attack;
     float energy;
     float health, maxHealth, speed, damage, maxEnergy, attackRadius;
     sf::CircleShape shape;
@@ -16,7 +17,7 @@ private:
     Bar hpbar;
 
 public:
-    Unit(sf::Vector2f _position, float _health, float _speed, float _damage, float _maxEnergy, float _attackRadius, sf::Color color);
+    Unit(sf::Vector2f _position,  unsigned int type ,float _health, float _speed, float _damage, float _maxEnergy, float _attackRadius, sf::Color color);
 
     void newMove();
     void moveTo(std::deque<sf::Vector2f> point, float newEnrgy);

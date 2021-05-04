@@ -13,6 +13,8 @@ private:
     bool inFocus = 0;
     World* world;
 
+    int current_type_unit;
+
     // UI
     sf::Text hint, goldAmount;
     sf::Font defaultFont, goldFont;

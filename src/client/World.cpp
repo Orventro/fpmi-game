@@ -22,7 +22,7 @@ void World::newMove()
 
     for(Town *t : map->getTowns())
         if(t->get_owner() == activeArmy)
-            activeArmy->giveGold(10);
+            activeArmy->giveGold(50);
 }
 
 bool World::selectUnit(sf::Vector2f point) {

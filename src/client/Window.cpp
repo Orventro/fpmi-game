@@ -96,7 +96,28 @@ void GameWindow::unit_selected(sf::Event event)
 
 void GameWindow::choose_new_unit(sf::Event event)
 {
-    if ((event.type == sf::Event::KeyPressed) & (event.key.code == sf::Keyboard::Num1))
+    current_type_unit = -1;
+
+    switch ( event.key.code )
+    {
+    case sf::Keyboard::Num1:
+        current_type_unit = 1;
+        break;
+    case sf::Keyboard::Num2:
+        current_type_unit = 2;
+        break;  
+    case sf::Keyboard::Num3:
+        current_type_unit = 3;
+        break;
+    case sf::Keyboard::Num4:
+        current_type_unit = 4;
+        break;
+    default:
+        current_type_unit = -1;
+        break;
+    }    
+
+    if ((event.type == sf::Event::KeyPressed) & ( current_type_unit != -1 ))
         if (world->unselect())
             state = &GameWindow::place_new_unit;
 }
@@ -107,7 +128,7 @@ void GameWindow::place_new_unit(sf::Event event)
     if ((event.type == sf::Event::MouseButtonPressed) & (event.mouseButton.button == sf::Mouse::Left))
     {
         sf::Vector2f mousePtr(event.mouseMove.y, event.mouseWheelScroll.x);
-        if (world->recruit(mousePtr, 1)) { // сейчас толко 1 тип 
+        if (world->recruit(mousePtr, current_type_unit)) { // сейчас толко 1 тип 
             state = &GameWindow::neutral;
             goldAmount.setString("GOLD: " + std::to_string(world->getGold()));
         }

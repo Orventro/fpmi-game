@@ -1,6 +1,6 @@
 #include "Unit.h"
 
-Unit::Unit(sf::Vector2f _position, float _health, float _speed, float _damage, float _maxEnergy, float _attackRadius, sf::Color color) :
+Unit::Unit(sf::Vector2f _position, unsigned int type ,float _health, float _speed, float _damage, float _maxEnergy, float _attackRadius, sf::Color color) :
     VisibleObject(_position),
     health(_health),
     maxHealth(_health),
@@ -11,6 +11,14 @@ Unit::Unit(sf::Vector2f _position, float _health, float _speed, float _damage, f
     shape(20, 4),
     hpbar(_position + HP_BAR_OFFSET, HP_BAR_SIZE, HP_BACK_COL, HP_FRONT_COL)
 {
+    flag_attack = true;
+    switch ( type )
+    {
+    case 1: shape.setPointCount(4); break;
+    case 2: shape.setPointCount(3); break;
+    case 3: shape.setPointCount(6); break;
+    case 4: shape.setPointCount(32); break;
+    }
     shape.setFillColor(color);
     shape.setOrigin(20, 20);
     shape.setRotation(90);
@@ -19,6 +27,7 @@ Unit::Unit(sf::Vector2f _position, float _health, float _speed, float _damage, f
 void Unit::newMove()
 {
     energy = maxEnergy;
+    flag_attack = false;
 }
 
 void Unit::moveTo(std::deque<sf::Vector2f> _path, float newEnergy)
@@ -37,11 +46,11 @@ void Unit::attacked(float dmg) {
 
 bool Unit::attack(Unit* u)
 {
-    if(energy < 400) // 400 - cost of attack (for now)
+    if( flag_attack ) 
         return 0;
     if(norm(u->getPosition() - position) <= attackRadius*attackRadius) {
         u->attacked(damage);
-        energy -= 400;
+        flag_attack = true;
         return 1;
     }
     return 0;
