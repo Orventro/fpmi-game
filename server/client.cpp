@@ -14,7 +14,6 @@
 #include <iostream>
 #include <queue>
 #include <thread>
-#include <mutex>
 
 #define PORT "3490" // порт, к которому будет подключаться клиент
 
@@ -34,8 +33,8 @@ void *get_in_addr(struct sockaddr *sa) {
 
 void thread_inf_recv (std::queue <std::string>& recv_buf, int sockfd) {
     while (true) {
-        std::string out;
         sleep(1);
+        std::string out;
         char buf_to_send[MAXDATASIZE];
         if (recv(sockfd, buf_to_send, MAXDATASIZE, 0) == -1) {
             perror("client: recv");
@@ -52,7 +51,6 @@ public :
     ~Client();
     void connect_Client();
     void send_Client(std::string s);
-    std::queue <std::string> get_recv_buf_Client();
     void test_Client();
     std::queue <std::string> recv_buf; // очередь с сообщениями от сервера
 private :
@@ -124,10 +122,6 @@ void Client::send_Client(std::string s) {
     if (send(sockfd, buf_to_send, MAXDATASIZE, 0) == -1) {
         perror("client: send");
     }
-}
-
-std::queue <std::string> Client::get_recv_buf_Client() {
-    return recv_buf;
 }
 
 void Client::test_Client() {
