@@ -36,6 +36,11 @@ void Unit::moveTo(std::deque<sf::Vector2f> _path, float newEnergy)
     energy = newEnergy;
 }
 
+float Unit::getAtkRad() const
+{
+    return attackRadius;
+}
+
 void Unit::attacked(float dmg) {
     health = std::max(0.0f, health - dmg);
     if(health == 0.0f) {
@@ -85,6 +90,11 @@ bool Unit::update(float dt)
 
 void Unit::finishAnimation(){
     position = path.back();
+}
+
+bool Unit::canAttack() const
+{
+    return !flag_attack;
 }
 
 void Unit::render(sf::RenderWindow& window)

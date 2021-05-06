@@ -28,5 +28,7 @@ public:
     bool isAnimating() const;
     void finishAnimation();
     float getEnergy() const;
+    bool canAttack() const;
+    float getAtkRad() const;
 
 };

@@ -2,11 +2,9 @@
 
 Army::Army(int _id) :
     attackRad(50, 32),
-    moveRad(500, 32),
     id(_id)
 {
     units.insert(new Unit(ARMY_POSITIONS[id],  1, 100, 300, 40, 150, 50, ARMY_COLORS[id] ));
-    moveRad.setFillColor(MOVE_COLOR);
     attackRad.setFillColor(ATTACK_COLOR);
     attackRad.setOrigin(50, 50);
 }
@@ -30,17 +28,15 @@ void Army::render(sf::RenderWindow& window)
     for(Unit* u : units) 
         u->render(window);
     
-    // if(selected) {
-    //     moveRad.setRadius(selected->getEnergy());
-    //     moveRad.setOrigin(selected->getEnergy(), selected->getEnergy());
-    //     moveRad.setPosition(selected->getPosition());
-    //     window.draw(moveRad);
-
-    //     if(selected->getEnergy() >= 400) {
-    //         window.draw(attackRad);
-    //         attackRad.setPosition(selected->getPosition());
-    //     }
-    // }
+    if(selected) {
+        if(selected->canAttack()) {
+            attackRad.setPosition(selected->getPosition());
+            float r = selected->getAtkRad();
+            attackRad.setRadius(r);
+            attackRad.setOrigin(sf::Vector2f(r,r));
+            window.draw(attackRad);
+        }
+    }
 }
 
 void Army::newMove()

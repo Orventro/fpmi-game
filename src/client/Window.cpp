@@ -2,7 +2,6 @@
 
 GameWindow::GameWindow(sf::Vector2f size) : window(sf::VideoMode(size.x, size.y), "fpmi-game")
 {
-    cout << "ok1\n";
     world = new World(size);
     window.setFramerateLimit(FPS);
     setState(STATE_NEUTRAL);
@@ -19,7 +18,7 @@ GameWindow::GameWindow(sf::Vector2f size) : window(sf::VideoMode(size.x, size.y)
     hint.setCharacterSize(20);
 
     for(int i = 0; i < 4; i++)
-        hints[STATE_CHOOSING] += std::to_string(i) + " (" + std::to_string(UNIT_COST[i]) + " gold), ";
+        hints[STATE_CHOOSING] += std::to_string(i+1) + " (" + std::to_string(UNIT_COST[i]) + " gold), ";
 
     goldAmount.setString("GOLD: " + std::to_string(START_GOLD));
     goldAmount.setFillColor(GOLD_COLOR);
@@ -47,13 +46,16 @@ int GameWindow::render()
             world->onResized(sf::Vector2f(window.getSize()));
             goldAmount.setPosition(sf::Vector2f(window.getSize().x, -(float)window.getSize().y)*0.5f + GOLD_OFFSET);
             hint.setPosition(sf::Vector2f(-(float)window.getSize().x, window.getSize().y)*0.5f + HINT_OFFSET);
-            cout << hint.getPosition() << endl;
         }
         else if ((event.type == sf::Event::KeyPressed) & (event.key.code == sf::Keyboard::Space))
         {
             world->newMove();
             goldAmount.setString("GOLD: " + std::to_string(world->getGold()));
             setState(STATE_NEUTRAL);
+        }
+        else if ((event.type == sf::Event::KeyPressed) & (event.key.code == sf::Keyboard::Escape))
+        {
+            return 1;
         }
         else if ((event.type == sf::Event::MouseButtonPressed) & (event.mouseButton.button == sf::Mouse::Right))
         {

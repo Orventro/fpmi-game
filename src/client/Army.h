@@ -2,7 +2,6 @@
 
 #include "consts.h"
 #include "Unit.h"
-#include "World.h"
 #include <vector>
 #include <set>
 #include <deque>
@@ -11,7 +10,7 @@ class Army
 {
 
 private:
-    sf::CircleShape attackRad, moveRad;
+    sf::CircleShape attackRad;
     const int id;
     set<Unit*> units;
     Unit* selected = 0;
