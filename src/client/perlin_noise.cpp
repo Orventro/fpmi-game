@@ -1,7 +1,7 @@
 #include "perlin_noise.h"
 
 double perlin_noise:: rand_double () {
-    return ( (double) ( (rand() ^ rand() ) % rand_denominator) + 1) / rand_denominator;
+    return ( (double) ( (rng() ^ rng() ) % rand_denominator) + 1) / rand_denominator;
 }
 
 void  perlin_noise:: set_node_generation ( std::vector<std::vector<double> > &block_seeds_color ) 

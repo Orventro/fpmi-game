@@ -7,10 +7,21 @@ World::World(sf::Vector2f winSize, sf::Vector2f _size) :
 {
     map = new WorldMap(_size.y, _size.x, 100, 100, 1);
     map->render();
-    armies.push_back(new Army(0, map->start_coord.first));
-    armies.push_back(new Army(1, map->start_coord.second));
+    const int armiesNum = 2;
+    // armies.push_back(new Army(0, map->start_coord.first));
+    // armies.push_back(new Army(1, map->start_coord.second));
+    Town* t;
+    do{
+        t = map->getRandTown();
+        if(t->get_owner() == 0) {
+            armies.push_back(new Army(armies.size(), t->getPosition()));
+            t->setOwner(armies.back());
+        }
+    } while(armies.size() < armiesNum);
+
     activeArmy = armies[0];
     activeArmy->newMove();
+    activeArmy->giveGold(10); // for first town
     camera.setCenter(size.x / 2, size.y / 2);
 }
 

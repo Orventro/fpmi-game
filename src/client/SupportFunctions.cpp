@@ -15,3 +15,5 @@ std::ostream& operator<<(std::ostream& os, const sf::Vector2f& v)
     os << "(" << v.x << ", " << v.y << ")";
     return os;
 }
+
+std::mt19937 rng;

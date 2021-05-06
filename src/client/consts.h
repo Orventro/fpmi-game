@@ -8,6 +8,9 @@
 #include <chrono>
 #include <iostream>
 #include <string>
+#include <random>
+
+extern std::mt19937 rng;
 
 // классы задекларированы здесь, поскольку ссылаются друг на друга
 class GameWindow;

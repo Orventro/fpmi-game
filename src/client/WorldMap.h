@@ -34,7 +34,8 @@ public:
 	void change_player(Town *t, int pl);
 	const std::vector<Town*>& getTowns() const;
 	std::pair<std::deque<sf::Vector2f>, float> getPath(sf::Vector2f point);
-	void get_start_towns();
+	// void get_start_towns();
+	Town* getRandTown();
 
 private:
 

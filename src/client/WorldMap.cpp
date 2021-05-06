@@ -52,7 +52,7 @@ void WorldMap::render()
             image_map.setPixel(x, y, TERRAIN_COLORS[type_block[y][x]]);
     
     this->create_towns();
-    this->get_start_towns();
+    // this->get_start_towns();
     mapTexture.loadFromImage(image_map);
     mapSprite.setTexture(mapTexture);
 }
@@ -206,8 +206,8 @@ void WorldMap::create_one_town()
     while (!flag_stop)
     {
         int delta = 60;
-        int x = rand() % width;
-        int y = rand() % height;
+        int x = rng() % width;
+        int y = rng() % height;
 
         if (x < delta)
             x = delta;
@@ -244,26 +244,31 @@ const std::vector<Town *> &WorldMap::getTowns() const
     return towns;
 }
 
-void WorldMap::get_start_towns() 
+// void WorldMap::get_start_towns() 
+// {
+//     int kol_wrong_attempt = 0;
+//     while ( kol_wrong_attempt < 100 ) 
+//     {
+//         int a =  rng() % towns.size();
+//         int b =  rng() % towns.size();
+//         if ( norm(towns[a]->getPosition() - towns[b]->getPosition() )  > 1000.0f ) {
+//             start_coord  =  std::make_pair( towns[a]->getPosition() , towns[b]->getPosition());
+//             return ;
+//         }
+//         else
+//             kol_wrong_attempt++;
+//     }
+//     int a =  rng() % towns.size();
+//     int b =  rng() % towns.size();
+//     while ( a == b ) 
+//     {
+//         a =  rng() % towns.size();
+//         b =  rng() % towns.size();
+//     }
+//     start_coord  =  std::make_pair( towns[a]->getPosition() , towns[b]->getPosition()); 
+// }
+
+Town* WorldMap::getRandTown()
 {
-    int kol_wrong_attempt = 0;
-    while ( kol_wrong_attempt < 100 ) 
-    {
-        int a =  rand() % towns.size();
-        int b =  rand() % towns.size();
-        if ( norm(towns[a]->getPosition() - towns[b]->getPosition() )  > 1000.0f ) {
-            start_coord  =  std::make_pair( towns[a]->getPosition() , towns[b]->getPosition());
-            return ;
-        }
-        else
-            kol_wrong_attempt++;
-    }
-    int a =  rand() % towns.size();
-    int b =  rand() % towns.size();
-    while ( a == b ) 
-    {
-        a =  rand() % towns.size();
-        b =  rand() % towns.size();
-    }
-    start_coord  =  std::make_pair( towns[a]->getPosition() , towns[b]->getPosition()); 
+    return towns[rng() % towns.size()];
 }
