@@ -12,6 +12,10 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <iostream>
+#include <queue>
+#include <thread>
+#include <mutex>
+
 
 #define PORT "3490" // порт, к которому будет подключаться клиент
 
@@ -35,16 +39,19 @@ public :
     ~Client();
     void connect_Client();
     void read_and_write_Client();
-    std::string recv_Client();
+    void recv_to_queue_Client();
     void send_Client(std::string s);
 private :
     int sockfd; // сокет для подключения
     int rights; // 0 - только для чтения, 1 - для записи и чтения
+    std::queue <std::string> recieved;
+    bool thread_finished;
 };
 
 Client::Client() {
     sockfd = -1;
     rights = 0;
+    thread_finished = true;
 }
 
 Client::~Client() {
@@ -97,15 +104,22 @@ void Client :: connect_Client() {
 	freeaddrinfo(servinfo);
 }
 
-std::string Client::recv_Client() {
+std::mutex my_sync;
+
+void Client::recv_to_queue_Client() {
+    my_sync.lock();
     std::string out;
     char buf_to_send[MAXDATASIZE];
+    thread_finished = false;
     if (recv(sockfd, buf_to_send, MAXDATASIZE, 0) == -1) {
         perror("client: recv");
         exit(1);
     }
     out = std::string (buf_to_send);
-    return out;
+    recieved.push(out);
+    std::cout << recieved.size() << std::endl;
+    thread_finished = true;
+    my_sync.unlock();
 }
 
 void Client::send_Client(std::string s) {
@@ -129,12 +143,18 @@ void Client::read_and_write_Client() {
     std::string buf2;
     while (buf1 != "!exit" && buf2 != "!exit") {
 
+        while(!recieved.empty()) {
+            recieved.pop();
+        }
+
         buf.clear();
         buf1.clear();
         buf2.clear();
 
         // считываем первое сообщение от сервера
-        buf = (*this).recv_Client();
+        recv_to_queue_Client();
+        buf = recieved.front();
+        recieved.pop();
 
         // определяем права
         if (buf == "New Step; you have rights to read and write") {
@@ -148,12 +168,19 @@ void Client::read_and_write_Client() {
         if (rights == 1) {
             while (buf1 != "!finish" && buf1 != "!exit") {
                 getline(std::cin, buf1);
-                (*this).send_Client(buf1);
+                send_Client(buf1);
             }
         } else {
             while (buf2 != "!finish" && buf2 != "!exit") {
-                buf2 = (*this).recv_Client();
+                // если все прошлые потоки завершились
+                if (thread_finished == true) {
+                    std::thread thr(&Client::recv_to_queue_Client, this);
+                    thr.detach();
+                }
+                sleep(1);
+                buf2 = recieved.front();
                 std::cout <<  "another user sended : " << buf2 << std::endl;
+                recieved.pop();
             }
         }
     }
