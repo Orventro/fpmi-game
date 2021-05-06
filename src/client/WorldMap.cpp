@@ -52,6 +52,7 @@ void WorldMap::render()
             image_map.setPixel(x, y, TERRAIN_COLORS[type_block[y][x]]);
     
     this->create_towns();
+    this->get_start_towns();
     mapTexture.loadFromImage(image_map);
     mapSprite.setTexture(mapTexture);
 }
@@ -243,9 +244,26 @@ const std::vector<Town *> &WorldMap::getTowns() const
     return towns;
 }
 
-// void WorldMap::change_player(Town *t, int pl)
-// {
-//     t->setOwner(pl, &image_map);
-//     mapTexture.loadFromImage(image_map);
-//     mapSprite.setTexture(mapTexture);
-// }
+void WorldMap::get_start_towns() 
+{
+    int kol_wrong_attempt = 0;
+    while ( kol_wrong_attempt < 100 ) 
+    {
+        int a =  rand() % towns.size();
+        int b =  rand() % towns.size();
+        if ( norm(towns[a]->getPosition() - towns[b]->getPosition() )  > 1000.0f ) {
+            start_coord  =  std::make_pair( towns[a]->getPosition() , towns[b]->getPosition());
+            return ;
+        }
+        else
+            kol_wrong_attempt++;
+    }
+    int a =  rand() % towns.size();
+    int b =  rand() % towns.size();
+    while ( a == b ) 
+    {
+        a =  rand() % towns.size();
+        b =  rand() % towns.size();
+    }
+    start_coord  =  std::make_pair( towns[a]->getPosition() , towns[b]->getPosition()); 
+}

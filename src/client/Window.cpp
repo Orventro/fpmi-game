@@ -18,7 +18,7 @@ GameWindow::GameWindow(sf::Vector2f size) : window(sf::VideoMode(size.x, size.y)
     hint.setCharacterSize(20);
 
     for(int i = 0; i < 4; i++)
-        hints[STATE_CHOOSING] += std::to_string(i+1) + " (" + std::to_string(UNIT_COST[i]) + " gold), ";
+        hints[STATE_CHOOSING] += std::to_string(i+1) + " (" + std::to_string(Price_unit[i]) + " gold), ";
 
     goldAmount.setString("GOLD: " + std::to_string(START_GOLD));
     goldAmount.setFillColor(GOLD_COLOR);

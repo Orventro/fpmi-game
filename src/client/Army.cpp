@@ -1,10 +1,10 @@
 #include "Army.h"
 
-Army::Army(int _id) :
+Army::Army(int _id, sf::Vector2f start) :
     attackRad(50, 32),
     id(_id)
-{
-    units.insert(new Unit(ARMY_POSITIONS[id],  1, 100, 300, 40, 150, 50, ARMY_COLORS[id] ));
+{           
+    units.insert(new Unit(  start , 1  , ARMY_COLORS[id] ));
     attackRad.setFillColor(ATTACK_COLOR);
     attackRad.setOrigin(50, 50);
 }
@@ -63,36 +63,36 @@ bool Army::recruit(sf::Vector2f point, int unitType)
     switch ( unitType )
     {
     case 1:
-        if(gold >= 20){
-            gold -= 20;
-            units.insert(new Unit(point, 1, 100, 300, 40, 150, 50, ARMY_COLORS[id]));
+        if(gold >= Price_unit[0] ){
+            gold -= Price_unit[0];
+            units.insert(new Unit(point, 1,  ARMY_COLORS[id]));
             return 1;
         }
         else
             return 0;
         break;                          
     case 2:
-        if(gold >= 50){
-            gold -= 50;
-            units.insert(new Unit(point, 2, 80, 300, 40, 150, 300, ARMY_COLORS[id]));
+        if(gold >=  Price_unit[1] ){
+            gold -= Price_unit[1];
+            units.insert(new Unit(point, 2 ,  ARMY_COLORS[id]));
             return 1;
         }
         else
             return 0;
         break; 
     case 3:
-        if(gold >= 80){
-            gold -= 80;
-            units.insert(new Unit(point, 3, 250, 300, 80, 100, 50, ARMY_COLORS[id]));
+        if(gold >= Price_unit[2]){
+            gold -= Price_unit[2];
+            units.insert(new Unit(point, 3, ARMY_COLORS[id]));
             return 1;
         }
         else
             return 0;
         break;
     case 4:
-        if(gold >= 120){
-            gold -= 120;
-            units.insert(new Unit(point, 4, 100, 300, 30, 250, 50, ARMY_COLORS[id]));
+        if(gold >= Price_unit[3]){
+            gold -= Price_unit[3];
+            units.insert(new Unit(point, 4, ARMY_COLORS[id]));
             return 1;
         }
         else

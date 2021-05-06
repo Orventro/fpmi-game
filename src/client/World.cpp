@@ -6,11 +6,11 @@ World::World(sf::Vector2f winSize, sf::Vector2f _size) :
                             camera(sf::FloatRect(0, 0, winSize.x, winSize.y))
 {
     map = new WorldMap(_size.y, _size.x, 100, 100, 1);
-    armies.push_back(new Army(0));
-    armies.push_back(new Army(1));
+    map->render();
+    armies.push_back(new Army(0, map->start_coord.first));
+    armies.push_back(new Army(1, map->start_coord.second));
     activeArmy = armies[0];
     activeArmy->newMove();
-    map->render();
     camera.setCenter(size.x / 2, size.y / 2);
 }
 

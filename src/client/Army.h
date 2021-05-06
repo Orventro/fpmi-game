@@ -20,7 +20,7 @@ private:
     std::deque<sf::Vector2f> path;
 
 public:
-    Army(int id); // id in [0, 4)
+    Army(int id, sf::Vector2f start); // id in [0, 4)
 
     void render(sf::RenderWindow& window);
     void update(float delta);

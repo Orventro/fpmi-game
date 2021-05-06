@@ -1,23 +1,49 @@
 #include "Unit.h"
 
-Unit::Unit(sf::Vector2f _position, unsigned int type ,float _health, float _speed, float _damage, float _maxEnergy, float _attackRadius, sf::Color color) :
+Unit::Unit(sf::Vector2f _position, unsigned int type , sf::Color color) :
     VisibleObject(_position),
-    health(_health),
-    maxHealth(_health),
-    speed(_speed),
-    damage(_damage),
-    maxEnergy(_maxEnergy),
-    attackRadius(_attackRadius),
     shape(20, 4),
     hpbar(_position + HP_BAR_OFFSET, HP_BAR_SIZE, HP_BACK_COL, HP_FRONT_COL)
 {
     flag_attack = true;
     switch ( type )
     {
-    case 1: shape.setPointCount(4); break;
-    case 2: shape.setPointCount(3); break;
-    case 3: shape.setPointCount(6); break;
-    case 4: shape.setPointCount(32); break;
+    case 1: 
+        shape.setPointCount(4);
+        maxHealth = swordsman[0];
+        health = maxHealth;
+        speed = 300;
+        damage = swordsman[1];
+        maxEnergy = swordsman[2];
+        attackRadius = swordsman[3]; 
+        break;
+    case 2: 
+        shape.setPointCount(3); 
+        maxHealth = bowman[0];
+        health = maxHealth;
+        speed = 300;
+        damage = bowman[1];
+        maxEnergy = bowman[2];
+        attackRadius = bowman[3]; 
+        break;
+    case 3: 
+        shape.setPointCount(6); 
+        maxHealth = knight[0];
+        health = maxHealth;
+        speed = 300;
+        damage = knight[1];
+        maxEnergy = knight[2];
+        attackRadius = knight[3]; 
+        break;
+    case 4: 
+        shape.setPointCount(32); 
+        maxHealth = cavalry[0];
+        health = maxHealth;
+        speed = 300;
+        damage = cavalry[1];
+        maxEnergy = cavalry[2];
+        attackRadius = cavalry[3];
+        break;
     }
     shape.setFillColor(color);
     shape.setOrigin(20, 20);

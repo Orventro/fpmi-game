@@ -23,7 +23,9 @@ public:
 	sf::Image image_map;
 
 	WorldMap(int size_h, int size_w, int step_h, int step_w, time_t seed);
-	~WorldMap();
+	~WorldMap();	
+
+	std::pair<sf::Vector2f, sf::Vector2f> start_coord;
 
 	void render();
 	void renderBorder(sf::Vector2u start, float dist);
@@ -32,6 +34,7 @@ public:
 	void change_player(Town *t, int pl);
 	const std::vector<Town*>& getTowns() const;
 	std::pair<std::deque<sf::Vector2f>, float> getPath(sf::Vector2f point);
+	void get_start_towns();
 
 private:
 
@@ -61,6 +64,7 @@ private:
 	void prop(int x, int y);
 	bool moveBackwards(int &x, int &y);
 	bool isBorder(int x, int y);
+
 
 	Town *closestTown(const sf::Vector2u coord);
 };

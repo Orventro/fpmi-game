@@ -63,8 +63,6 @@ const sf::Vector2f HP_BAR_OFFSET(0, 30);
 
 const sf::Vector2f WORLD_SIZE(2000, 2000);
 
-const int UNIT_COST[4] = {20, 40, 60, 100};
-
 const size_t size_elemantary_block_in_pixel = 2;
 const size_t pixel_size = 1.f;
 // const size_t size_screen_in_block_w =  std::ceil( ( (double) windowWidth) / ( size_elemantary_block_in_pixel ) );
@@ -87,4 +85,13 @@ const sf::Vector2f HINT_OFFSET(20, -30);
 // Также радиус, в котором может появится новый юнит из этого города.
 const float TOWN_RADIUS = 1e2;
 // Во второй степени
-const float TOWN_RADIUS2 = 1e4;
+const float TOWN_RADIUS2 = 1e4; 
+
+// unit's price
+const unsigned int Price_unit[4] = {20, 30, 40, 50};
+
+//unit's parameters : health, damage, energy, radius
+const unsigned int swordsman[4] = {100, 40, 150, 50};
+const unsigned int bowman[4] = { 70, 40, 130, 300  };
+const unsigned int knight[4] = { 200, 60,100, 50 };
+const unsigned int cavalry[4] = { 120, 35, 250,  50};
