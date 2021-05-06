@@ -1,4 +1,3 @@
-
 // СЕРВЕР ДЛЯ ИГРЫ
 
 #include <cstdint>
@@ -229,15 +228,16 @@ void Tcp_Server::create_connection_for_two_players_Server() {
         turn_number++;
         to_send.clear();
         // чей ход, у того есть право на rw, у второго есть право только на r. new_fd[1-step_number%2] - право на rw
-        (*this).send_Server(new_fd[1-(turn_number%2)], "New Step; you have rights to read and write");
-        (*this).send_Server(new_fd[turn_number%2], "New Step; you have rights only to read");
+        send_Server(new_fd[1-(turn_number%2)], "New Step; you have rights to read and write");
+        send_Server(new_fd[turn_number%2], "New Step; you have rights only to read");
 
         // пока первый не скажет, что он закончил(finished), он может писать. Если он скажет exit, то чат закрываем
         while (to_send != "!finish" && to_send != "!exit") {
             // сначала читаем данные из буфера, которые передал пользователь с правом rw
-            to_send = (*this).recv_Server(new_fd[1-(turn_number%2)]);
+            to_send = recv_Server(new_fd[1-(turn_number%2)]);
+            std::cout << to_send << std::endl;
             // теперь передаем их пользователю, который имеет только право на чтение
-            (*this).send_Server(new_fd[turn_number%2], to_send);
+            send_Server(new_fd[turn_number%2], to_send);
         }
     }
 

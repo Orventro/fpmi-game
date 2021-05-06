@@ -16,7 +16,6 @@
 #include <thread>
 #include <mutex>
 
-
 #define PORT "3490" // порт, к которому будет подключаться клиент
 
 #define MAXDATASIZE 100 // максимальное количество байт, которое мы можем получить за раз от сервера
@@ -33,32 +32,47 @@ void *get_in_addr(struct sockaddr *sa) {
 	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
+void thread_inf_recv (std::queue <std::string>& recv_buf, int sockfd) {
+    while (true) {
+        std::string out;
+        sleep(1);
+        char buf_to_send[MAXDATASIZE];
+        if (recv(sockfd, buf_to_send, MAXDATASIZE, 0) == -1) {
+            perror("client: recv");
+            exit(1);
+        }
+        out = std::string (buf_to_send);
+        recv_buf.push(out);
+    }
+}
+
 class Client {
 public :
     Client();
     ~Client();
     void connect_Client();
-    void read_and_write_Client();
-    void recv_to_queue_Client();
     void send_Client(std::string s);
+    std::queue <std::string> get_recv_buf_Client();
+    void test_Client();
+    std::queue <std::string> recv_buf; // очередь с сообщениями от сервера
 private :
     int sockfd; // сокет для подключения
-    int rights; // 0 - только для чтения, 1 - для записи и чтения
-    std::queue <std::string> recieved;
-    bool thread_finished;
 };
 
 Client::Client() {
     sockfd = -1;
-    rights = 0;
-    thread_finished = true;
+    // подключаем его сразу к серверу
+    connect_Client();
+    // делаем отдельный поток, который будет бесконечно считывать и записывать в очередь recv_buf сообщения от сервера
+    std::thread thr(thread_inf_recv, std::ref(recv_buf), sockfd);
+    thr.detach();
 }
 
 Client::~Client() {
     close(sockfd);
 }
 
-void Client :: connect_Client() {
+void Client::connect_Client() {
     char s[INET6_ADDRSTRLEN]; // максимальный размер адреса сервера
     struct addrinfo hints, *servinfo, *p; // нужно для функции getaddrinfo(), которая позволит заполнить инфу по клиенту в servinfo
     int rv;
@@ -104,24 +118,6 @@ void Client :: connect_Client() {
 	freeaddrinfo(servinfo);
 }
 
-std::mutex my_sync;
-
-void Client::recv_to_queue_Client() {
-    my_sync.lock();
-    std::string out;
-    char buf_to_send[MAXDATASIZE];
-    thread_finished = false;
-    if (recv(sockfd, buf_to_send, MAXDATASIZE, 0) == -1) {
-        perror("client: recv");
-        exit(1);
-    }
-    out = std::string (buf_to_send);
-    recieved.push(out);
-    std::cout << recieved.size() << std::endl;
-    thread_finished = true;
-    my_sync.unlock();
-}
-
 void Client::send_Client(std::string s) {
     char buf_to_send[MAXDATASIZE];
     strcpy(buf_to_send,s.c_str());
@@ -130,57 +126,39 @@ void Client::send_Client(std::string s) {
     }
 }
 
-void Client::read_and_write_Client() {
+std::queue <std::string> Client::get_recv_buf_Client() {
+    return recv_buf;
+}
+
+void Client::test_Client() {
 
     if (sockfd == -1) {
         perror("client: not initialized soket for server connection\n");
         exit(1);
     }
 
-    // мы уже подключены к серверу, поэтому можем считать, что он нам прислал на первом ходе
-    std::string buf;
-    std::string buf1;
-    std::string buf2;
-    while (buf1 != "!exit" && buf2 != "!exit") {
+    while (recv_buf.empty() == true) {
+        sleep(1);
+    }
 
-        while(!recieved.empty()) {
-            recieved.pop();
+    std::cout << recv_buf.front() << std::endl;
+    std::string buf = recv_buf.front();
+    recv_buf.pop();
+
+    // определяем в зависимости от прав действия
+    if (buf == "New Step; you have rights to read and write") {
+        while (true) {
+            std::string buf1;
+            getline(std::cin, buf1);
+            send_Client(buf1);
         }
-
-        buf.clear();
-        buf1.clear();
-        buf2.clear();
-
-        // считываем первое сообщение от сервера
-        recv_to_queue_Client();
-        buf = recieved.front();
-        recieved.pop();
-
-        // определяем права
-        if (buf == "New Step; you have rights to read and write") {
-            rights = 1;
-            std::cout << buf << std::endl;
-        } else {
-            rights = 0;
-            std::cout << buf << std::endl;
-        }
-
-        if (rights == 1) {
-            while (buf1 != "!finish" && buf1 != "!exit") {
-                getline(std::cin, buf1);
-                send_Client(buf1);
-            }
-        } else {
-            while (buf2 != "!finish" && buf2 != "!exit") {
-                // если все прошлые потоки завершились
-                if (thread_finished == true) {
-                    std::thread thr(&Client::recv_to_queue_Client, this);
-                    thr.detach();
-                }
-                sleep(1);
-                buf2 = recieved.front();
-                std::cout <<  "another user sended : " << buf2 << std::endl;
-                recieved.pop();
+    } else {
+        while (true) {
+            sleep(1);
+            if (recv_buf.empty() == false) {
+                std::cout << recv_buf.size() << std::endl;
+                std::cout << "another user sended : " << recv_buf.front() << std::endl;
+                recv_buf.pop();
             }
         }
     }
@@ -188,7 +166,6 @@ void Client::read_and_write_Client() {
 
 int main() {
     Client A;
-    A.connect_Client();
-    A.read_and_write_Client();
+    A.test_Client();
 	return 0;
 }
