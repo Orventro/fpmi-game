@@ -18,7 +18,7 @@ void Bar::setProgress(float progress)
 {
     sf::Vector2f size = back.getSize();
     front.setSize({size.x * progress, size.y});
-    front.setPosition(position - sf::Vector2f(size.x * (1-progress), 0));
+    front.setPosition(position);
 }
 
 void Bar::moveTo(sf::Vector2f _position)
