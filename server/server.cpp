@@ -40,6 +40,16 @@ typedef int socket_type;
 
 #define MAXDATASIZE 100 // размер буффера для приёма данных от клиента в байтах
 
+// пакет, которые мы пересылаем между пользователями
+enum ACTION
+{
+    NEW_UNIT,
+    END_MOVE,
+    UNIT_ACTION,
+    END_GAME,
+    MY_NULL
+};
+
 class Tcp_Server {
 public :
     Tcp_Server ();
@@ -198,17 +208,29 @@ void Tcp_Server::create_connection_for_two_players_Server() {
         perror("server : first accept");
     }
 
+    std::string generation_seed;
+    // cразу отсылаем ему права на чтение и запись, т.к. он первый. И получаем от него зерно генерации. 1 - чтение и запись. 2 - только чтение
+    send_Server(new_fd[0], "1");
+    generation_seed = recv_Server(new_fd[0]);
+
+    if (generation_seed.size() == 0) {
+        perror("server : no generation seed");
+    }
+
     // записываем сетевой адрес подключающегося в массив символов char s[max_size]
     inet_ntop(addr1.ss_family, get_in_addr((struct sockaddr *)&addr1), s, sizeof s);
     printf("server: got connection from %s\n", s);
-
     printf("server: waiting for second connection... \n");
 
-    // второе подключающийся
+    // второй подключающийся
     new_fd[1] = accept(sockfd, (struct sockaddr*)&addr2, &sin_size);
     if (new_fd[1] == -1) {
         perror("server : second accept");
     }
+
+    // отсылаем ему права на чтение, т.к. он второй. Так же отправляем generation_seed. 1 - чтение и запись. 2 - только чтение
+    send_Server(new_fd[1], "2");
+    send_Server(new_fd[1], generation_seed);
 
     // записываем сетевой адрес подключающегося в массив символов char s[max_size]
     inet_ntop(addr2.ss_family, get_in_addr((struct sockaddr *)&addr2), s, sizeof s);
@@ -221,21 +243,21 @@ void Tcp_Server::create_connection_for_two_players_Server() {
     // закрываем сокет для слушанья, т.к. он нам больше не нужен для созданной пары
     close(sockfd);
 
-    std::string to_send;
+    std::string to_send; // что отправляем
     int turn_number = 0; // номер хода
+    ACTION type; // тип действия
 
-    while (to_send != "!exit") {
+    while (type != END_GAME) {
         turn_number++;
         to_send.clear();
-        // чей ход, у того есть право на rw, у второго есть право только на r. new_fd[1-step_number%2] - право на rw
-        send_Server(new_fd[1-(turn_number%2)], "New Step; you have rights to read and write");
-        send_Server(new_fd[turn_number%2], "New Step; you have rights only to read");
-
+        type = MY_NULL;
         // пока первый не скажет, что он закончил(finished), он может писать. Если он скажет exit, то чат закрываем
-        while (to_send != "!finish" && to_send != "!exit") {
+        while (type != END_MOVE && type != END_GAME) {
             // сначала читаем данные из буфера, которые передал пользователь с правом rw
             to_send = recv_Server(new_fd[1-(turn_number%2)]);
             std::cout << to_send << std::endl;
+            // распаковываем и получаем тип действия
+            type = ACTION(*reinterpret_cast<int *>(&to_send[0]));
             // теперь передаем их пользователю, который имеет только право на чтение
             send_Server(new_fd[turn_number%2], to_send);
         }
