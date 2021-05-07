@@ -1,5 +1,5 @@
 
-SFML_LIBS = -lsfml-graphics -lsfml-window -lsfml-system
+SFML_LIBS = -lsfml-graphics -lsfml-window -lsfml-system -lpthread
 CLIENT_FILES = ./src/client/*.cpp
 CLIENT_BIN_PATH = ./bin/client
 RESOURCES_H = ./src/client/Resources.h

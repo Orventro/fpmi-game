@@ -18,7 +18,7 @@ private:
     Client client;
 
     int type_of_new_unit;
-    int myArmyId = 1;
+    int myArmyId = 0;
 
     // UI
     sf::Text hint, goldAmount;
