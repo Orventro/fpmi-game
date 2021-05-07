@@ -1,39 +1,40 @@
 #include "Army.h"
 
-Army::Army(int _id, sf::Vector2f start) :
-    attackRad(50, 32),
-    id(_id)
-{           
-    units.insert(new Unit(  start , 1  , ARMY_COLORS[id] ));
+Army::Army(int _id, sf::Vector2f start) : attackRad(50, 32),
+                                          id(_id)
+{
+    units.insert(new Unit(start, 1, ARMY_COLORS[id]));
     attackRad.setFillColor(ATTACK_COLOR);
     attackRad.setOrigin(50, 50);
 }
 
 void Army::update(float delta)
 {
-    vector<Unit*> dead;
-    for(Unit* u : units) 
-        if(!u->update(delta))
+    vector<Unit *> dead;
+    for (Unit *u : units)
+        if (!u->update(delta))
             dead.push_back(u);
 
-    for(Unit* u : dead)
+    for (Unit *u : dead)
     {
         units.erase(u);
         delete u;
     }
 }
 
-void Army::render(sf::RenderWindow& window)
-{   
-    for(Unit* u : units) 
+void Army::render(sf::RenderWindow &window)
+{
+    for (Unit *u : units)
         u->render(window);
-    
-    if(selected) {
-        if(selected->canAttack()) {
+
+    if (selected)
+    {
+        if (selected->canAttack())
+        {
             attackRad.setPosition(selected->getPosition());
             float r = selected->getAtkRad();
             attackRad.setRadius(r);
-            attackRad.setOrigin(sf::Vector2f(r,r));
+            attackRad.setOrigin(sf::Vector2f(r, r));
             window.draw(attackRad);
         }
     }
@@ -41,13 +42,13 @@ void Army::render(sf::RenderWindow& window)
 
 void Army::newMove()
 {
-    if(selected)
+    if (selected)
         selected->finishAnimation();
     active = 1;
     // gold += 10;
-    for(Unit* u : units)
+    for (Unit *u : units)
         u->newMove();
-    
+
     // cout << id << " new move\n";
 }
 
@@ -58,30 +59,33 @@ void Army::endMove()
     // cout << id << " end move\n";
 }
 
-bool Army::recruit(sf::Vector2f point, int unitType) 
+bool Army::recruit(sf::Vector2f point, int unitType)
 {
-    switch ( unitType )
+    switch (unitType)
     {
     case 1:
-        if(gold >= Price_unit[0] ){
+        if (gold >= Price_unit[0])
+        {
             gold -= Price_unit[0];
-            units.insert(new Unit(point, 1,  ARMY_COLORS[id]));
+            units.insert(new Unit(point, 1, ARMY_COLORS[id]));
             return 1;
         }
         else
             return 0;
-        break;                          
+        break;
     case 2:
-        if(gold >=  Price_unit[1] ){
+        if (gold >= Price_unit[1])
+        {
             gold -= Price_unit[1];
-            units.insert(new Unit(point, 2 ,  ARMY_COLORS[id]));
+            units.insert(new Unit(point, 2, ARMY_COLORS[id]));
             return 1;
         }
         else
             return 0;
-        break; 
+        break;
     case 3:
-        if(gold >= Price_unit[2]){
+        if (gold >= Price_unit[2])
+        {
             gold -= Price_unit[2];
             units.insert(new Unit(point, 3, ARMY_COLORS[id]));
             return 1;
@@ -90,7 +94,8 @@ bool Army::recruit(sf::Vector2f point, int unitType)
             return 0;
         break;
     case 4:
-        if(gold >= Price_unit[3]){
+        if (gold >= Price_unit[3])
+        {
             gold -= Price_unit[3];
             units.insert(new Unit(point, 4, ARMY_COLORS[id]));
             return 1;
@@ -98,7 +103,7 @@ bool Army::recruit(sf::Vector2f point, int unitType)
         else
             return 0;
         break;
-    
+
     default:
         return 0;
         break;
@@ -107,25 +112,27 @@ bool Army::recruit(sf::Vector2f point, int unitType)
     return 0;
 }
 
-void Army::attack(Unit* u)
+bool Army::attack(Unit *u)
 {
-    if(selected) selected->attack(u);
+    if (selected)
+        return selected->attack(u);
+    return 0;
 }
 
 void Army::moveTo(std::deque<sf::Vector2f> _path, float newEnergy)
 {
-    if(selected)
+    if (selected)
         selected->moveTo(_path, newEnergy);
 }
 
-Unit* Army::getSelectedUnit() const 
+Unit *Army::getSelectedUnit() const
 {
     return selected;
 }
 
-bool Army::select(sf::Vector2f point) 
+bool Army::select(sf::Vector2f point)
 {
-    if(isAnimating())
+    if (isAnimating())
         return 0;
     // cout << point << (*units.begin())->getPosition() << endl;
     float normToUnit = 400; // max dist to detect click
@@ -138,29 +145,42 @@ bool Army::select(sf::Vector2f point)
             pointedUnit = u;
         }
     }
-    if(pointedUnit == 0)
+    if (pointedUnit == 0)
         return 0;
     selected = pointedUnit;
     return 1;
 }
 
-const set<Unit*>* Army::getUnits() const 
+bool Army::select(int unitId)
+{
+    for (auto u : units)
+    {
+        if (u->getId() == unitId)
+        {
+            selected = u;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+const set<Unit *> *Army::getUnits() const
 {
     return &units;
 }
 
 bool Army::isAnimating() const
 {
-    if(!selected)
+    if (!selected)
         return 0;
     return selected->isAnimating();
 }
 
 bool Army::unselect()
 {
-    if(!selected)
+    if (!selected)
         return 1;
-    if(selected->isAnimating())
+    if (selected->isAnimating())
         return 0;
     selected = 0;
     return 1;
@@ -183,6 +203,6 @@ int Army::getId()
 
 Army::~Army()
 {
-    for(auto u : units)
+    for (auto u : units)
         delete u;
 }

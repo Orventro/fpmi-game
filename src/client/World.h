@@ -10,33 +10,58 @@
 #include "Army.h"
 #include "Window.h"
 
-class World{
+class World
+{
 private:
     sf::Vector2f size, windowSize;
-    vector<Army*> armies;
-    Army* activeArmy;
+    vector<Army *> armies;
+    Army *activeArmy;
     sf::View camera;
-    WorldMap* map;
+    WorldMap *map;
     int turn = 0;
 
-    void update_town ();
-    void moveCamera(sf::RenderWindow& renderWindow, float delta);
+    void update_town();
+    void moveCamera(sf::RenderWindow &renderWindow, float delta);
 
 public:
-
     World(sf::Vector2f winSize = DEFAULT_WINDOW_SIZE, sf::Vector2f _size = WORLD_SIZE);
 
-    void render(sf::RenderWindow& window, float delta, bool drawTownRadius, bool drawMovementBorder);
-    void updateWindowSize(sf::Vector2f);
-    const vector<Army*>& getArmies() const;
+    void render(sf::RenderWindow &window, float delta, bool drawTownRadius, bool drawMovementBorder);
+
+    // adapt to new window size
     void onResized(sf::Vector2f);
-    Town* seizeTown(sf::Vector2f);
-    bool selectUnit(sf::Vector2f);
-    void action(sf::Vector2f);
+
+    // return closest unprotected town to point
+    Town *seizeTown(sf::Vector2f point);
+
+    // select unit at point
+    bool selectUnit(sf::Vector2f point);
+
+    // select unit with id
+    bool selectUnit(int id);
+
+    // tell selected unit to do something at point
+    bool action(sf::Vector2f point);
+
+    // change active army
     void newMove();
+
+    // unselect unit
     bool unselect();
+
+    // recruit new unit of unitType for active army at point
     bool recruit(sf::Vector2f point, int unitType);
-    int getGold();
-    
+
+    // get active army gold
+    int getAAGold() const;
+
+    // get active army id
+    int getAAId() const;
+
+    // transform point to absolute coords
+    void transformPoint(sf::Vector2f &point) const;
+
+    Unit *getSelected() const;
+
     ~World();
 };

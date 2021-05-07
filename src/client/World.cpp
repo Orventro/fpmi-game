@@ -1,23 +1,24 @@
 #include "World.h"
 #include "consts.h"
 
-World::World(sf::Vector2f winSize, sf::Vector2f _size) :
-                            size(_size),
-                            camera(sf::FloatRect(0, 0, winSize.x, winSize.y))
+World::World(sf::Vector2f winSize, sf::Vector2f _size) : size(_size),
+                                                         camera(sf::FloatRect(0, 0, winSize.x, winSize.y))
 {
     map = new WorldMap(_size.y, _size.x, 100, 100, 1);
     map->render();
     const int armiesNum = 2;
     // armies.push_back(new Army(0, map->start_coord.first));
     // armies.push_back(new Army(1, map->start_coord.second));
-    Town* t;
-    do{
+    Town *t;
+    do
+    {
         t = map->getRandTown();
-        if(t->get_owner() == 0) {
+        if (t->get_owner() == 0)
+        {
             armies.push_back(new Army(armies.size(), t->getPosition()));
             t->setOwner(armies.back());
         }
-    } while(armies.size() < armiesNum);
+    } while (armies.size() < armiesNum);
 
     activeArmy = armies[0];
     activeArmy->newMove();
@@ -26,19 +27,20 @@ World::World(sf::Vector2f winSize, sf::Vector2f _size) :
 }
 
 void World::newMove()
-{   
+{
     activeArmy->endMove();
     activeArmy = armies[(++turn) % armies.size()];
     activeArmy->newMove();
 
-    for(Town *t : map->getTowns())
-        if(t->get_owner() == activeArmy)
+    for (Town *t : map->getTowns())
+        if (t->get_owner() == activeArmy)
             activeArmy->giveGold(10);
 }
 
-bool World::selectUnit(sf::Vector2f point) {
-    point += camera.getCenter() - windowSize*0.5f;
-    if(activeArmy->select(point)) {
+bool World::selectUnit(sf::Vector2f point)
+{
+    if (activeArmy->select(point))
+    {
         // cout << "rb\n";
         map->renderBorder(sf::Vector2u(activeArmy->getSelectedUnit()->getPosition()), activeArmy->getSelectedUnit()->getEnergy());
         return 1;
@@ -46,15 +48,19 @@ bool World::selectUnit(sf::Vector2f point) {
     return 0;
 }
 
-void World::action(sf::Vector2f point) {
-    // Calculate click target
-    point += camera.getCenter() - windowSize*0.5f;
+bool World::selectUnit(int id)
+{
+    return activeArmy->select(id);
+}
 
-    float normToUnit = 400; // max dist to detect click
+bool World::action(sf::Vector2f point)
+{
+
+    float normToUnit = 400; // max norm to detect click
     Unit *pointedUnit = 0;
     for (auto a : armies)
     {
-        if(a == activeArmy)
+        if (a == activeArmy)
             continue;
         for (auto u : *a->getUnits())
         {
@@ -65,18 +71,22 @@ void World::action(sf::Vector2f point) {
             }
         }
     }
-    if(pointedUnit)
-        activeArmy->attack(pointedUnit);
-    else{
+    if (pointedUnit)
+        return activeArmy->attack(pointedUnit);
+    else
+    {
         auto path = map->getPath(point);
-        if(path.second != 0) {
+        if (path.second != 0)
+        {
             activeArmy->moveTo(path.first, path.second);
-            Town* t = seizeTown(point);
-            if(t)
+            Town *t = seizeTown(point);
+            if (t)
                 t->setOwner(activeArmy);
             map->renderBorder(sf::Vector2u(point), path.second);
+            return 1;
         }
     }
+    return 0;
 }
 
 bool World::unselect()
@@ -84,10 +94,12 @@ bool World::unselect()
     return activeArmy->unselect();
 }
 
-int World::getGold(){
+int World::getAAGold() const
+{
     return activeArmy->getGold();
 }
 
+// formula for camera movement
 float move_speed(float x, float range)
 {
     if (x >= 0)
@@ -96,13 +108,14 @@ float move_speed(float x, float range)
         return 0;
 }
 
-void World::moveCamera(sf::RenderWindow& renderWindow, float dt){
+void World::moveCamera(sf::RenderWindow &renderWindow, float dt)
+{
     int x = sf::Mouse::getPosition(renderWindow).x;
     int y = sf::Mouse::getPosition(renderWindow).y;
     float adjDelta = std::min(dt, 1.0f);
 
     float winWidth = windowSize.x,
-            winHeight = windowSize.y;
+          winHeight = windowSize.y;
 
     // moving camera
     camera.move(move_speed(x, winWidth) * LEFT * adjDelta);
@@ -121,7 +134,6 @@ void World::moveCamera(sf::RenderWindow& renderWindow, float dt){
         camera.setCenter({camera.getCenter().x, size.y - winHeight / 2});
 
     renderWindow.setView(camera);
-
 }
 
 void World::render(sf::RenderWindow &renderWindow, float dt, bool drawTownRadius, bool drawMovementBorder)
@@ -130,19 +142,14 @@ void World::render(sf::RenderWindow &renderWindow, float dt, bool drawTownRadius
         a->update(dt);
 
     moveCamera(renderWindow, dt);
-    
+
     map->draw(renderWindow, drawTownRadius, drawMovementBorder);
 
     for (auto a : armies)
         a->render(renderWindow);
 
-    // gold_amount.setOrigin(-camera.getCenter() + sf::Vector2f(windowSize) * 0.5f + GOLD_OFFSET); 
+    // gold_amount.setOrigin(-camera.getCenter() + sf::Vector2f(windowSize) * 0.5f + GOLD_OFFSET);
     // renderWindow.draw(gold_amount);
-}
-
-const vector<Army *> &World::getArmies() const
-{
-    return armies;
 }
 
 void World::onResized(sf::Vector2f winSize)
@@ -155,13 +162,26 @@ void World::onResized(sf::Vector2f winSize)
 
 bool World::recruit(sf::Vector2f point, int unitType)
 {
-    point += camera.getCenter() - windowSize*0.5f;
-    
     // проверяем, если рядом с выбранной точкой есть город, принадлежащий этой армии
-    for(Town *t : map->getTowns()) 
-        if((norm(t->getPosition() - point) < TOWN_RADIUS2) & (t->get_owner() == activeArmy)) 
-                return activeArmy->recruit(point, unitType);
+    for (Town *t : map->getTowns())
+        if ((norm(t->getPosition() - point) < TOWN_RADIUS2) & (t->get_owner() == activeArmy))
+            return activeArmy->recruit(point, unitType);
     return 0;
+}
+
+int World::getAAId() const
+{
+    return activeArmy->getId();
+}
+
+void World::transformPoint(sf::Vector2f &point) const
+{
+    point += camera.getCenter() - windowSize * 0.5f;
+}
+
+Unit *World::getSelected() const
+{
+    return activeArmy->getSelectedUnit();
 }
 
 World::~World()
@@ -171,9 +191,10 @@ World::~World()
     delete map;
 }
 
-Town* World::seizeTown(sf::Vector2f point){
-    for(Town* t : map->getTowns()) 
-        if(norm(t->getPosition() - point) < TOWN_RADIUS2 && !t->isProtected())
+Town *World::seizeTown(sf::Vector2f point)
+{
+    for (Town *t : map->getTowns())
+        if (norm(t->getPosition() - point) < TOWN_RADIUS2 && !t->isProtected())
             return t;
     return 0;
 }

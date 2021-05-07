@@ -5,7 +5,7 @@
 #include "Bar.h"
 #include <deque>
 
-class Unit : public VisibleObject 
+class Unit : public VisibleObject
 {
 private:
     bool alive = 1;
@@ -15,20 +15,22 @@ private:
     sf::CircleShape shape;
     std::deque<sf::Vector2f> path;
     Bar hpbar;
+    int id;
+    static int idCounter;
 
 public:
-    Unit(sf::Vector2f _position,  unsigned int type , sf::Color color);
+    Unit(sf::Vector2f _position, unsigned int type, sf::Color color);
 
     void newMove();
     void moveTo(std::deque<sf::Vector2f> point, float newEnrgy);
-    bool attack(Unit* u);
+    bool attack(Unit *u);
     void attacked(float dmg);
-    void render(sf::RenderWindow& window);
+    void render(sf::RenderWindow &window);
     bool update(float delta);
     bool isAnimating() const;
     void finishAnimation();
     float getEnergy() const;
     bool canAttack() const;
     float getAtkRad() const;
-
+    int getId() const;
 };

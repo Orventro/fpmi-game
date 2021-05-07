@@ -4,8 +4,14 @@ GameWindow::GameWindow(sf::Vector2f size) : window(sf::VideoMode(size.x, size.y)
 {
     world = new World(size);
     window.setFramerateLimit(FPS);
+#ifdef MULTIPLAYER
+    if (world->getAAId() == myArmyId)
+        setState(STATE_NEUTRAL);
+    else
+        setState(STATE_WAITING);
+#else
     setState(STATE_NEUTRAL);
-
+#endif
     if (!defaultFont.loadFromMemory(__res_fonts_Oswald_ttf, __res_fonts_Oswald_ttf_len))
     {
         cout << "Error! Cannot load font from memory!\n";
@@ -14,11 +20,11 @@ GameWindow::GameWindow(sf::Vector2f size) : window(sf::VideoMode(size.x, size.y)
 
     hint.setFont(defaultFont);
     hint.setFillColor(sf::Color(29, 30, 31, 255));
-    hint.setPosition(sf::Vector2f(-window.getSize().x, window.getSize().y)*0.5f + HINT_OFFSET);
+    hint.setPosition(sf::Vector2f(-window.getSize().x, window.getSize().y) * 0.5f + HINT_OFFSET);
     hint.setCharacterSize(20);
 
-    for(int i = 0; i < 4; i++)
-        hints[STATE_CHOOSING] += std::to_string(i+1) + " (" + std::to_string(Price_unit[i]) + " gold), ";
+    for (int i = 0; i < 4; i++)
+        hints[STATE_CHOOSING] += std::to_string(i + 1) + " (" + std::to_string(Price_unit[i]) + " gold), ";
 
     goldAmount.setString("GOLD: " + std::to_string(START_GOLD));
     goldAmount.setFillColor(GOLD_COLOR);
@@ -42,25 +48,36 @@ int GameWindow::render()
     {
         if (event.type == sf::Event::Closed)
             window.close();
-        else if (event.type == sf::Event::Resized) {
-            world->onResized(sf::Vector2f(window.getSize()));
-            goldAmount.setPosition(sf::Vector2f(window.getSize().x, -(float)window.getSize().y)*0.5f + GOLD_OFFSET);
-            hint.setPosition(sf::Vector2f(-(float)window.getSize().x, window.getSize().y)*0.5f + HINT_OFFSET);
-        }
-        else if ((event.type == sf::Event::KeyPressed) & (event.key.code == sf::Keyboard::Space))
+        else if (event.type == sf::Event::Resized)
         {
-            world->newMove();
-            goldAmount.setString("GOLD: " + std::to_string(world->getGold()));
-            setState(STATE_NEUTRAL);
+            world->onResized(sf::Vector2f(window.getSize()));
+            goldAmount.setPosition(sf::Vector2f(window.getSize().x, -(float)window.getSize().y) * 0.5f + GOLD_OFFSET);
+            hint.setPosition(sf::Vector2f(-(float)window.getSize().x, window.getSize().y) * 0.5f + HINT_OFFSET);
         }
         else if ((event.type == sf::Event::KeyPressed) & (event.key.code == sf::Keyboard::Escape))
         {
             return 1;
         }
-        else if ((event.type == sf::Event::MouseButtonPressed) & (event.mouseButton.button == sf::Mouse::Right))
+        else if ((state != &GameWindow::waiting) & (state != &GameWindow::finish))
         {
-            if (world->unselect())
+            if ((event.type == sf::Event::KeyPressed) & (event.key.code == sf::Keyboard::Space))
+            {
+                world->newMove();
+                goldAmount.setString("GOLD: " + std::to_string(world->getAAGold()));
+#ifdef MULTIPLAYER
+                setState(STATE_WAITING);
+                send(END_MOVE);
+#else
                 setState(STATE_NEUTRAL);
+#endif
+            }
+            else if ((event.type == sf::Event::MouseButtonPressed) & (event.mouseButton.button == sf::Mouse::Right))
+            {
+                if (world->unselect())
+                    setState(STATE_NEUTRAL);
+            }
+            else
+                std::invoke(state, this, event); // C++17
         }
         else
             std::invoke(state, this, event); // C++17
@@ -71,7 +88,7 @@ int GameWindow::render()
     world->render(window, 1.0f / FPS, (state == &GameWindow::unit_selected) | (state == &GameWindow::place_new_unit), state == &GameWindow::unit_selected);
 
     sf::View v = window.getView();
-    v.setCenter({0,0});
+    v.setCenter({0, 0});
     window.setView(v);
     window.draw(goldAmount);
     window.draw(hint);
@@ -83,14 +100,53 @@ int GameWindow::render()
 
 void GameWindow::waiting(sf::Event event)
 {
-
+#ifdef MULTIPLAYER
+    // cout << "mp\n";
+    while (!client.recv_buf.empty())
+    {
+        cout << "buf not empty\n";
+        std::string s = std::move(client.recv_buf.front());
+        client.recv_buf.pop();
+        ACTION type = ACTION(*reinterpret_cast<int *>(&s[0]));
+        switch (type)
+        {
+        case END_MOVE:
+            world->newMove();
+            if (world->getAAId() == myArmyId)
+                setState(STATE_NEUTRAL);
+            break;
+        case NEW_UNIT:
+        {
+            // char c_info[sizeof(std::tuple<sf::Vector2f, int>)];
+            // for (int i = 0; i < sizeof(std::tuple<sf::Vector2f, int>); i++)
+            //     c_info[i] = s[i + 4];
+            auto info = *reinterpret_cast<std::tuple<sf::Vector2f, int> *>(&s[4]);
+            world->recruit(std::get<0>(info), std::get<1>(info));
+            break;
+        }
+        case UNIT_ACTION:
+        {
+            auto info = *reinterpret_cast<std::tuple<sf::Vector2f, int> *>(&s[4]);
+            world->selectUnit(std::get<1>(info));
+            world->action(std::get<0>(info));
+            break;
+        }
+        case END_GAME:
+            setState(STATE_FINISH);
+            break;
+        default:
+            cout << "could not interpret " << type << endl;
+        }
+    }
+#endif
 }
 
 void GameWindow::neutral(sf::Event event)
 {
     if ((event.type == sf::Event::MouseButtonPressed) & (event.mouseButton.button == sf::Mouse::Left))
     {
-        sf::Vector2f mousePtr(event.mouseMove.y, event.mouseWheelScroll.x); // but why??? idk seems to be a bug of sfml
+        sf::Vector2f mousePtr(sf::Mouse::getPosition(window));
+        world->transformPoint(mousePtr);
         if (world->selectUnit(mousePtr))
             setState(STATE_SELECTED);
     }
@@ -100,40 +156,61 @@ void GameWindow::neutral(sf::Event event)
             setState(STATE_CHOOSING);
 }
 
+void GameWindow::send(ACTION actionType, int num, sf::Vector2f vec)
+{
+    std::string message;
+    char *c = reinterpret_cast<char *>(&actionType);
+    message += std::string(c, sizeof(int));
+
+    if (actionType == NEW_UNIT | actionType == UNIT_ACTION)
+    {
+        std::tuple<sf::Vector2f, int> info(vec, num);
+        c = reinterpret_cast<char *>(&info);
+        message += std::string(c, sizeof(std::tuple<sf::Vector2f, int>));
+    }
+    client.send_Client(message);
+}
+
 void GameWindow::unit_selected(sf::Event event)
 {
 
     if ((event.type == sf::Event::MouseButtonPressed) & (event.mouseButton.button == sf::Mouse::Left))
     {
-        sf::Vector2f mousePtr(event.mouseMove.y, event.mouseWheelScroll.x);
-        world->action(mousePtr);
+        sf::Vector2f mousePtr(sf::Mouse::getPosition(window));
+        world->transformPoint(mousePtr);
+        if (world->action(mousePtr))
+        {
+#ifdef MULTIPLAYER
+            send(UNIT_ACTION, world->getSelected()->getId(), mousePtr);
+#endif
+        }
     }
 }
 
 void GameWindow::choose_new_unit(sf::Event event)
 {
-    current_type_unit = -1;
+    type_of_new_unit = -1;
 
-    switch ( event.key.code )
+    switch (event.key.code)
     {
     case sf::Keyboard::Num1:
-        current_type_unit = 1;
+        type_of_new_unit = 1;
         break;
     case sf::Keyboard::Num2:
-        current_type_unit = 2;
-        break;  
+        type_of_new_unit = 2;
+        break;
     case sf::Keyboard::Num3:
-        current_type_unit = 3;
+        type_of_new_unit = 3;
         break;
     case sf::Keyboard::Num4:
-        current_type_unit = 4;
+        type_of_new_unit = 4;
         break;
     default:
-        current_type_unit = -1;
+        type_of_new_unit = -1;
         break;
-    }    
+    }
 
-    if ((event.type == sf::Event::KeyPressed) & ( current_type_unit != -1 ))
+    if ((event.type == sf::Event::KeyPressed) & (type_of_new_unit != -1))
         if (world->unselect())
             setState(STATE_PLACING);
 }
@@ -143,12 +220,21 @@ void GameWindow::place_new_unit(sf::Event event)
 
     if ((event.type == sf::Event::MouseButtonPressed) & (event.mouseButton.button == sf::Mouse::Left))
     {
-        sf::Vector2f mousePtr(event.mouseMove.y, event.mouseWheelScroll.x);
-        if (world->recruit(mousePtr, current_type_unit)) { // сейчас толко 1 тип 
+        sf::Vector2f mousePtr(sf::Mouse::getPosition(window));
+        world->transformPoint(mousePtr);
+        if (world->recruit(mousePtr, type_of_new_unit))
+        {
             setState(STATE_NEUTRAL);
-            goldAmount.setString("GOLD: " + std::to_string(world->getGold()));
+            goldAmount.setString("GOLD: " + std::to_string(world->getAAGold()));
+#ifdef MULTIPLAYER
+            send(UNIT_ACTION, type_of_new_unit, mousePtr);
+#endif
         }
     }
+}
+
+void GameWindow::finish(sf::Event event)
+{
 }
 
 void GameWindow::setState(int state_id)

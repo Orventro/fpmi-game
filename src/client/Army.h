@@ -12,8 +12,8 @@ class Army
 private:
     sf::CircleShape attackRad;
     const int id;
-    set<Unit*> units;
-    Unit* selected = 0;
+    set<Unit *> units;
+    Unit *selected = 0;
     bool active = 0;
     bool animation = 0;
     int gold = START_GOLD;
@@ -22,22 +22,22 @@ private:
 public:
     Army(int id, sf::Vector2f start); // id in [0, 4)
 
-    void render(sf::RenderWindow& window);
+    void render(sf::RenderWindow &window);
     void update(float delta);
     void newMove();
     void endMove();
     bool recruit(sf::Vector2f point, int unitType);
     bool select(sf::Vector2f point);
+    bool select(int unitId);
     bool unselect();
     bool isAnimating() const;
     void giveGold(int);
     int getGold() const;
-    void attack(Unit* u);
+    bool attack(Unit *u);
     void moveTo(std::deque<sf::Vector2f> path, float newEnergy);
-    Unit* getSelectedUnit() const;
+    Unit *getSelectedUnit() const;
     int getId();
-    const set<Unit*>* getUnits() const;
+    const set<Unit *> *getUnits() const;
 
     ~Army();
-
 };

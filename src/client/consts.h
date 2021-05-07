@@ -19,21 +19,20 @@ class World;
 class WorldMap;
 class Town;
 
-using std::set;
 using std::cout;
 using std::endl;
-using std::vector;
-using std::min;
 using std::max;
+using std::min;
+using std::set;
+using std::vector;
 using timestamp = std::chrono::_V2::system_clock::time_point;
 
-const sf::Vector2f UP   ( 0, -1);
-const sf::Vector2f DOWN ( 0,  1);
-const sf::Vector2f LEFT (-1,  0);
-const sf::Vector2f RIGHT( 1,  0);
+const sf::Vector2f UP(0, -1);
+const sf::Vector2f DOWN(0, 1);
+const sf::Vector2f LEFT(-1, 0);
+const sf::Vector2f RIGHT(1, 0);
 
 const float CAMERA_SPEED = 5;
-
 
 const sf::Vector2f DEFAULT_WINDOW_SIZE(800, 600);
 
@@ -41,13 +40,20 @@ const sf::Vector2f DEFAULT_WINDOW_SIZE(800, 600);
 
 float norm(sf::Vector2f v);
 float vlen(sf::Vector2f v);
-std::ostream& operator<<(std::ostream& os, const sf::Vector2f& v);
+std::ostream &operator<<(std::ostream &os, const sf::Vector2f &v);
 
 const sf::Color ARMY_COLORS[] = {sf::Color::Blue, sf::Color::Red, sf::Color::Yellow, sf::Color::Green};
 const sf::Color BLANK_TOWN_COLOR = sf::Color(73, 75, 77, 255);
 
 const sf::Vector2f ARMY_POSITIONS[] = {sf::Vector2f(20, 20), sf::Vector2f(20, 400), sf::Vector2f(400, 20), sf::Vector2f(400, 400)};
 
+enum ACTION
+{
+    NEW_UNIT,
+    END_MOVE,
+    UNIT_ACTION,
+    END_GAME
+};
 // цвета элементов UI
 
 const sf::Color SELECT_COLOR(20, 250, 20, 90);
@@ -72,7 +78,7 @@ const size_t pixel_size = 1.f;
 // const size_t size_screen_in_block_h =  std::ceil( ( (double) windowHeight) / ( size_elemantary_block_in_pixel ) );
 const unsigned int step_node_h = 100;
 const unsigned int step_node_w = 100;
-const size_t rand_denominator =  10000;
+const size_t rand_denominator = 10000;
 const size_t sprite_size = size_elemantary_block_in_pixel * pixel_size;
 
 // void, sea, sand, grass
@@ -84,17 +90,17 @@ const int START_GOLD = 0;
 const sf::Vector2f GOLD_OFFSET(-200, 10);
 const sf::Vector2f HINT_OFFSET(20, -30);
 
-// Радиус в котором город находится под влиянием его армии и не может быть захвачен. 
+// Радиус в котором город находится под влиянием его армии и не может быть захвачен.
 // Также радиус, в котором может появится новый юнит из этого города.
 const float TOWN_RADIUS = 1e2;
 // Во второй степени
-const float TOWN_RADIUS2 = 1e4; 
+const float TOWN_RADIUS2 = 1e4;
 
 // unit's price
 const unsigned int Price_unit[4] = {20, 30, 40, 50};
 
 //unit's parameters : health, damage, energy, radius
 const unsigned int swordsman[4] = {100, 40, 150, 50};
-const unsigned int bowman[4] = { 70, 40, 130, 300  };
-const unsigned int knight[4] = { 200, 60,100, 50 };
-const unsigned int cavalry[4] = { 120, 35, 250,  50};
+const unsigned int bowman[4] = {70, 40, 130, 300};
+const unsigned int knight[4] = {200, 60, 100, 50};
+const unsigned int cavalry[4] = {120, 35, 250, 50};
