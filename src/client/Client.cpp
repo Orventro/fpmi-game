@@ -30,7 +30,6 @@ void thread_inf_recv(std::queue<std::string> &recv_buf, int sockfd)
             perror("client: recv");
             exit(1);
         }
-        std::cout << "got message\n";
         out = std::string(buf_to_send);
         recv_buf.push(out);
     }
@@ -41,6 +40,15 @@ Client::Client()
     sockfd = -1;
     // подключаем его сразу к серверу
     connect_Client();
+    // читаем начальные данные
+    char buf_to_send[MAXDATASIZE];
+    if (recv(sockfd, buf_to_send, MAXDATASIZE, 0) == -1)
+    {
+        perror("client: recv");
+        exit(1);
+    }
+    seed = atoi(&buf_to_send[2]);
+    id = buf_to_send[0] - '1';
     // делаем отдельный поток, который будет бесконечно считывать и записывать в очередь recv_buf сообщения от сервера
     std::thread thr(thread_inf_recv, std::ref(recv_buf), sockfd);
     thr.detach();

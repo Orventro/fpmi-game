@@ -50,7 +50,12 @@ bool World::selectUnit(sf::Vector2f point)
 
 bool World::selectUnit(int id)
 {
-    return activeArmy->select(id);
+    if (activeArmy->select(id))
+    {
+        map->renderBorder(sf::Vector2u(activeArmy->getSelectedUnit()->getPosition()), activeArmy->getSelectedUnit()->getEnergy());
+        return 1;
+    }
+    return 0;
 }
 
 bool World::action(sf::Vector2f point)

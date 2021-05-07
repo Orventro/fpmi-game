@@ -12,14 +12,17 @@
 #include <queue>
 #include <thread>
 
-class Client {
-public :
+class Client
+{
+public:
     Client();
     ~Client();
     void connect_Client();
     void send_Client(std::string s);
     void test_Client();
-    std::queue <std::string> recv_buf; // очередь с сообщениями от сервера
-private :
+    std::queue<std::string> recv_buf; // очередь с сообщениями от сервера
+    int seed, id;
+
+private:
     int sockfd; // сокет для подключения
 };

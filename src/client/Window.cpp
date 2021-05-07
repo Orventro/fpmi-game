@@ -1,8 +1,11 @@
 #include "Window.h"
 
+#define MULTIPLAYER
+
 GameWindow::GameWindow(sf::Vector2f size) : window(sf::VideoMode(size.x, size.y), "fpmi-game")
 {
     world = new World(size);
+    myArmyId = client.id;
     window.setFramerateLimit(FPS);
 #ifdef MULTIPLAYER
     if (world->getAAId() == myArmyId)
@@ -63,12 +66,12 @@ int GameWindow::render()
             if ((event.type == sf::Event::KeyPressed) & (event.key.code == sf::Keyboard::Space))
             {
                 world->newMove();
-                goldAmount.setString("GOLD: " + std::to_string(world->getAAGold()));
 #ifdef MULTIPLAYER
                 setState(STATE_WAITING);
                 send(END_MOVE);
 #else
                 setState(STATE_NEUTRAL);
+                goldAmount.setString("GOLD: " + std::to_string(world->getAAGold()));
 #endif
             }
             else if ((event.type == sf::Event::MouseButtonPressed) & (event.mouseButton.button == sf::Mouse::Right))
@@ -104,33 +107,34 @@ void GameWindow::waiting(sf::Event event)
     // cout << "mp\n";
     while (!client.recv_buf.empty())
     {
-        cout << "buf not empty\n";
         std::string s = std::move(client.recv_buf.front());
         client.recv_buf.pop();
-        ACTION type = ACTION(*reinterpret_cast<int *>(&s[0]));
+        int num, t;
+        float x, y;
+        sscanf(s.c_str(), "%d", &t);
+        ACTION type = ACTION(t);
         switch (type)
         {
         case END_MOVE:
             world->newMove();
+            cout << "new move\n";
             if (world->getAAId() == myArmyId)
+            {
                 setState(STATE_NEUTRAL);
+                goldAmount.setString("GOLD: " + std::to_string(world->getAAGold()));
+            }
             break;
         case NEW_UNIT:
-        {
-            // char c_info[sizeof(std::tuple<sf::Vector2f, int>)];
-            // for (int i = 0; i < sizeof(std::tuple<sf::Vector2f, int>); i++)
-            //     c_info[i] = s[i + 4];
-            auto info = *reinterpret_cast<std::tuple<sf::Vector2f, int> *>(&s[4]);
-            world->recruit(std::get<0>(info), std::get<1>(info));
+            cout << "new unit\n";
+            sscanf(s.c_str(), "%d %d %f %f", &t, &num, &x, &y);
+            world->recruit(sf::Vector2f(x, y), num);
             break;
-        }
         case UNIT_ACTION:
-        {
-            auto info = *reinterpret_cast<std::tuple<sf::Vector2f, int> *>(&s[4]);
-            world->selectUnit(std::get<1>(info));
-            world->action(std::get<0>(info));
+            sscanf(s.c_str(), "%d %d %f %f", &t, &num, &x, &y);
+            // cout << "unit action " << sf::Vector2f(x, y) << ' ' << num << endl;
+            world->selectUnit(num);
+            world->action(sf::Vector2f(x, y));
             break;
-        }
         case END_GAME:
             setState(STATE_FINISH);
             break;
@@ -160,14 +164,17 @@ void GameWindow::send(ACTION actionType, int num, sf::Vector2f vec)
 {
     std::string message;
     char *c = reinterpret_cast<char *>(&actionType);
-    message += std::string(c, sizeof(int));
-
+    message += std::to_string((int)actionType) + " ";
     if (actionType == NEW_UNIT | actionType == UNIT_ACTION)
     {
         std::tuple<sf::Vector2f, int> info(vec, num);
         c = reinterpret_cast<char *>(&info);
-        message += std::string(c, sizeof(std::tuple<sf::Vector2f, int>));
+        // message += std::string(c, sizeof(std::tuple<sf::Vector2f, int>));
+        message += std::to_string(num) + " " + std::to_string(vec.x) + " " + std::to_string(vec.y);
+        cout << "send " << ' ' << num << ' ' << vec << '\n';
     }
+    else
+        cout << "nm " << endl;
     client.send_Client(message);
 }
 
@@ -227,7 +234,7 @@ void GameWindow::place_new_unit(sf::Event event)
             setState(STATE_NEUTRAL);
             goldAmount.setString("GOLD: " + std::to_string(world->getAAGold()));
 #ifdef MULTIPLAYER
-            send(UNIT_ACTION, type_of_new_unit, mousePtr);
+            send(NEW_UNIT, type_of_new_unit, mousePtr);
 #endif
         }
     }

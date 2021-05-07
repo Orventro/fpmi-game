@@ -4,6 +4,7 @@
 #include <functional>
 #include <string>
 #include <tuple>
+#include <cstdio>
 #include "VisibleObject.h"
 #include "World.h"
 #include "Client.h"
@@ -18,7 +19,7 @@ private:
     Client client;
 
     int type_of_new_unit;
-    int myArmyId = 0;
+    int myArmyId = 1;
 
     // UI
     sf::Text hint, goldAmount;
