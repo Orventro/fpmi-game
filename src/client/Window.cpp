@@ -4,6 +4,7 @@
 
 GameWindow::GameWindow(sf::Vector2f size) : window(sf::VideoMode(size.x, size.y), "fpmi-game")
 {
+    rng = std::mt19937(client.seed);
     world = new World(size);
     myArmyId = client.id;
     window.setFramerateLimit(FPS);
