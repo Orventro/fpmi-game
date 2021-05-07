@@ -1,3 +1,4 @@
+
 // СЕРВЕР ДЛЯ ИГРЫ
 
 #include <cstdint>
@@ -14,6 +15,7 @@
 #include <vector>
 #include <utility>
 #include <iostream>
+#include <random>
 
 #ifdef _WIN32 // Windows 32 и 64
 
@@ -208,14 +210,18 @@ void Tcp_Server::create_connection_for_two_players_Server() {
         perror("server : first accept");
     }
 
+    // генерация seed
     std::string generation_seed;
-    // cразу отсылаем ему права на чтение и запись, т.к. он первый. И получаем от него зерно генерации. 1 - чтение и запись. 2 - только чтение
-    send_Server(new_fd[0], "1");
-    generation_seed = recv_Server(new_fd[0]);
+    std::random_device rng;
+    std::mt19937 {rng()};
+    int seed = rng();
+    generation_seed = std::to_string(seed);
 
     if (generation_seed.size() == 0) {
         perror("server : no generation seed");
     }
+    // cразу отсылаем ему права на чтение и запись, т.к. он первый. И отправляем ему зерно генерации. 1 - чтение и запись. 2 - только чтение
+    send_Server(new_fd[0], "1 " + generation_seed);
 
     // записываем сетевой адрес подключающегося в массив символов char s[max_size]
     inet_ntop(addr1.ss_family, get_in_addr((struct sockaddr *)&addr1), s, sizeof s);
@@ -229,8 +235,7 @@ void Tcp_Server::create_connection_for_two_players_Server() {
     }
 
     // отсылаем ему права на чтение, т.к. он второй. Так же отправляем generation_seed. 1 - чтение и запись. 2 - только чтение
-    send_Server(new_fd[1], "2");
-    send_Server(new_fd[1], generation_seed);
+    send_Server(new_fd[1], "2 " + generation_seed);
 
     // записываем сетевой адрес подключающегося в массив символов char s[max_size]
     inet_ntop(addr2.ss_family, get_in_addr((struct sockaddr *)&addr2), s, sizeof s);
