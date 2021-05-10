@@ -1,14 +1,14 @@
 #include "Window.h"
 
-// #define MULTIPLAYER
-
 GameWindow::GameWindow(sf::Vector2f size) : window(sf::VideoMode(size.x, size.y), "fpmi-game")
 {
     // init rng
+#ifdef MULTIPLAYER
     rng = std::mt19937(client.seed);
+    myArmyId = client.id;
+#endif
 
     world = new World(size);
-    myArmyId = client.id;
     window.setFramerateLimit(FPS);
 #ifdef MULTIPLAYER
     if (world->getAAId() == myArmyId)
@@ -163,6 +163,7 @@ void GameWindow::neutral(sf::Event event)
             setState(STATE_CHOOSING);
 }
 
+#ifdef MULTIPLAYER
 void GameWindow::send(ACTION actionType, int num, sf::Vector2f vec)
 {
     std::string message;
@@ -180,6 +181,7 @@ void GameWindow::send(ACTION actionType, int num, sf::Vector2f vec)
         cout << "nm " << endl;
     client.send_Client(message);
 }
+#endif
 
 void GameWindow::unit_selected(sf::Event event)
 {

@@ -9,6 +9,8 @@
 #include "World.h"
 #include "Client.h"
 
+// #define MULTIPLAYER
+
 class GameWindow
 {
 private:
@@ -16,7 +18,10 @@ private:
     sf::Clock clock;
     bool inFocus = 0;
     World *world;
+
+#ifdef MULTIPLAYER
     Client client;
+#endif
 
     int type_of_new_unit;
     int myArmyId = 1;
