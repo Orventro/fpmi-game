@@ -1,6 +1,6 @@
 #include "Window.h"
 
-#define MULTIPLAYER
+// #define MULTIPLAYER
 
 GameWindow::GameWindow(sf::Vector2f size) : window(sf::VideoMode(size.x, size.y), "fpmi-game")
 {
