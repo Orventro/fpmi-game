@@ -1,12 +1,14 @@
 
 SFML_LIBS = -lsfml-graphics -lsfml-window -lsfml-system -lpthread
-CLIENT_FILES = ./src/client/*.cpp
+CLIENT_SOURCE = ./src/client/*.cpp
+SERVER_SOURCE = ./src/server.cpp
 CLIENT_BIN_PATH = ./bin/client
+SERVER_BIN_PATH = ./bin/server
 RESOURCES_H = ./src/client/Resources.h
 
 client:
 	mkdir -p bin
-	g++ -std=c++17 -o $(CLIENT_BIN_PATH) -O3 $(FLAGS) $(CLIENT_FILES) -I/src/client/ -I/usr/include/SFML $(SFML_LIBS) 
+	g++ -std=c++17 -o $(CLIENT_BIN_PATH) -O3 $(FLAGS) $(CLIENT_SOURCE) -I/src/client/ -I/usr/include/SFML $(SFML_LIBS) 
 
 resources:
 	rm -f $(RESOURCES_H)
@@ -18,4 +20,7 @@ resources:
 		echo "$${file} >> $(RESOURCES_H)" ;\
 	done
 
-all: resources client
+server:
+	g++ -o $(SERVER_BIN_PATH) $(SERVER_SOURCE)
+
+all: resources client server

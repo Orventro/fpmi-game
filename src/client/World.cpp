@@ -32,9 +32,20 @@ void World::newMove()
     activeArmy = armies[(++turn) % armies.size()];
     activeArmy->newMove();
 
+    bool hasTowns = 0;
     for (Town *t : map->getTowns())
+    {
         if (t->get_owner() == activeArmy)
+        {
             activeArmy->giveGold(10);
+            hasTowns = 1;
+        }
+    }
+
+    if (!hasTowns & !activeArmy->alive())
+    {
+        // army has lost
+    }
 }
 
 bool World::selectUnit(sf::Vector2f point)

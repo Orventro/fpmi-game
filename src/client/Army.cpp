@@ -130,6 +130,11 @@ Unit *Army::getSelectedUnit() const
     return selected;
 }
 
+bool Army::alive() const
+{
+    return !units.empty();
+}
+
 bool Army::select(sf::Vector2f point)
 {
     if (isAnimating())

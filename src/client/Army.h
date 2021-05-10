@@ -31,6 +31,7 @@ public:
     bool select(int unitId);
     bool unselect();
     bool isAnimating() const;
+    bool alive() const;
     void giveGold(int);
     int getGold() const;
     bool attack(Unit *u);
