@@ -14,7 +14,7 @@ public:
 
     void setProgress(float progress);
 
-    virtual void render(sf::RenderWindow& window);
+    virtual void render(sf::RenderWindow& window) ;
 
     void moveTo(sf::Vector2f _posiiton);
 

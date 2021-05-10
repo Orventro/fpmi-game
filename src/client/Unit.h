@@ -1,30 +1,36 @@
 #pragma once
 
+#include "consts.h"
 #include "VisibleObject.h"
 #include "Bar.h"
-#include "consts.h"
+#include <deque>
 
-class Unit : public VisibleObject 
+class Unit : public VisibleObject
 {
 private:
     bool alive = 1;
+    bool flag_attack;
     float energy;
     float health, maxHealth, speed, damage, maxEnergy, attackRadius;
-    sf::Vector2f destination;
     sf::CircleShape shape;
+    std::deque<sf::Vector2f> path;
     Bar hpbar;
+    int id;
+    static int idCounter;
 
 public:
-    Unit(sf::Vector2f _position, float _health, float _speed, float _damage, float _maxEnergy, float _attackRadius, sf::Color color);
+    Unit(sf::Vector2f _position, unsigned int type, sf::Color color);
 
     void newMove();
-    bool moveTo(sf::Vector2f point);
-    bool attack(Unit* u);
+    void moveTo(std::deque<sf::Vector2f> point, float newEnrgy);
+    bool attack(Unit *u);
     void attacked(float dmg);
-    void render(sf::RenderWindow& window);
+    void render(sf::RenderWindow &window);
     bool update(float delta);
     bool isAnimating() const;
+    void finishAnimation();
     float getEnergy() const;
-
-    ~Unit();
+    bool canAttack() const;
+    float getAtkRad() const;
+    int getId() const;
 };
