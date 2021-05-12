@@ -60,13 +60,13 @@ int GameWindow::render()
             goldAmount.setPosition(sf::Vector2f(window.getSize().x, -(float)window.getSize().y) * 0.5f + GOLD_OFFSET);
             hint.setPosition(sf::Vector2f(-(float)window.getSize().x, window.getSize().y) * 0.5f + HINT_OFFSET);
         }
-        else if ((event.type == sf::Event::KeyPressed) & (event.key.code == sf::Keyboard::Escape))
+        else if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape))
         {
             return 1;
         }
         else if ((state != &GameWindow::waiting) & (state != &GameWindow::finish))
         {
-            if ((event.type == sf::Event::KeyPressed) & (event.key.code == sf::Keyboard::Space))
+            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Space))
             {
                 world->newMove();
 #ifdef MULTIPLAYER
