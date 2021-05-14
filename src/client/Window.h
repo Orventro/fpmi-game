@@ -5,6 +5,7 @@
 #include <string>
 #include <tuple>
 #include <cstdio>
+#include <chrono>
 #include "VisibleObject.h"
 #include "World.h"
 #include "Client.h"
@@ -18,16 +19,17 @@ private:
     sf::Clock clock;
     bool inFocus = 0;
     World *world;
+    timestamp lastFrameTime;
 
 #ifdef MULTIPLAYER
     Client client;
 #endif
 
     int type_of_new_unit;
-    int myArmyId = 1;
+    int myArmyId = 0;
 
     // UI
-    sf::Text hint, goldAmount;
+    sf::Text hint, goldAmount, endgameText;
     sf::Font defaultFont, goldFont;
     sf::CircleShape townRad;
 
@@ -46,7 +48,7 @@ private:
         "Press number key to choose new unit type: ",
         "Click near seized town to place your new unit",
         "Click to move or attack",
-        "Game Ended"};
+        "Game Ended. Press Esc to exit"};
     // these functions are for finite automaton
 
     void neutral(sf::Event);         // default state: unit not selected

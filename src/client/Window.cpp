@@ -42,6 +42,12 @@ GameWindow::GameWindow(sf::Vector2f size) : window(sf::VideoMode(size.x, size.y)
         exit(1);
     }
     goldAmount.setFont(goldFont);
+
+    endgameText.setFont(defaultFont);
+    endgameText.setPosition({0, 0});
+    endgameText.setCharacterSize(150);
+
+    lastFrameTime = std::chrono::steady_clock::now();
 }
 
 int GameWindow::render()
@@ -91,13 +97,27 @@ int GameWindow::render()
 
     window.clear();
 
-    world->render(window, 1.0f / FPS, (state == &GameWindow::unit_selected) | (state == &GameWindow::place_new_unit), state == &GameWindow::unit_selected);
+    if (state == states[STATE_FINISH])
+    {
+        window.draw(endgameText);
+    }
+    else
+    {
+        timestamp newFrameTime = std::chrono::steady_clock::now();
+        int gameNotEnded = world->render(window, get_microseconds(newFrameTime - lastFrameTime) * 1e-6f,
+                                         (state == &GameWindow::unit_selected) | (state == &GameWindow::place_new_unit),
+                                         state == &GameWindow::unit_selected);
+        lastFrameTime = newFrameTime;
 
-    sf::View v = window.getView();
-    v.setCenter({0, 0});
-    window.setView(v);
-    window.draw(goldAmount);
-    window.draw(hint);
+        sf::View v = window.getView();
+        v.setCenter({0, 0});
+        window.setView(v);
+        window.draw(goldAmount);
+        window.draw(hint);
+
+        if (!gameNotEnded)
+            setState(STATE_FINISH);
+    }
 
     window.display();
 
@@ -251,6 +271,22 @@ void GameWindow::finish(sf::Event event)
 
 void GameWindow::setState(int state_id)
 {
+    if (state_id == STATE_FINISH)
+    {
+
+        if (state == states[STATE_WAITING])
+        {
+            endgameText.setString("LOSS");
+            endgameText.setFillColor(LOSE_COLOR);
+        }
+        else
+        {
+            endgameText.setString("WIN");
+            endgameText.setFillColor(WIN_COLOR);
+        }
+        auto bounds = endgameText.getLocalBounds();
+        endgameText.setOrigin({bounds.width / 2, bounds.height / 2});
+    }
     state = states[state_id];
     hint.setString(hints[state_id]);
 }
