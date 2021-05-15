@@ -30,7 +30,7 @@
 
 #define MAXDATASIZE 100 // размер буффера для приёма данных от клиента в байтах
 
-// пакет, которые мы пересылаем между пользователями
+// пакет, который мы пересылаем между пользователями
 enum ACTION
 {
     NEW_UNIT,
@@ -72,7 +72,7 @@ void *get_in_addr(struct sockaddr *sa)
     return &(((struct sockaddr_in6 *)sa)->sin6_addr);
 }
 
-// что будет передавать наш сервер
+// вариант модификации сообщения сервером, чтобы переслать второму пользователю
 char *modified_by_server_to_send(char *input)
 {
     char *res = (char *)malloc(strlen(input) + 4);
@@ -154,7 +154,7 @@ void Tcp_Server::start_Server()
     freeaddrinfo(servinfo);
 }
 
-// тут недоработано, т.к надо подчищать зомби-процессы, вызванные fork (пока этого нет, но будет)
+// возможно надо будет убивать все дочерние процессы при закрытии сервера (доделать это)
 void Tcp_Server ::close_Server()
 {
     close(sockfd);
@@ -183,8 +183,6 @@ void Tcp_Server::listen_Server()
         perror("listen");
         exit(1);
     }
-
-    printf("server: waiting for connections...\n");
 }
 
 std::string Tcp_Server::recv_Server(int sockfd)
@@ -198,12 +196,12 @@ std::string Tcp_Server::recv_Server(int sockfd)
         exit(1);
     }
     out = std::string(buf_to_send);
-    // проверям отключился ли игрок, от которого мы получили сообщение
+    /*// проверям отключился ли игрок, от которого мы получили сообщение
     if (r == 0)
     {
         // посылаем второму, что он сдался. Этим идентификатором будет служить число 3
         out = "3";
-    }
+    }*/
     return out;
 }
 
@@ -219,10 +217,11 @@ void Tcp_Server::send_Server(int sockfd, std::string s)
 
 void Tcp_Server::create_connection_for_two_players_Server()
 {
-
     struct sockaddr_storage addr1, addr2; // инфа про подключающихся
     socklen_t sin_size = sizeof(addr1);   // accept() не поместит в addr обьём данных больше, чем в этой переменной
-    char s[INET6_ADDRSTRLEN];             // максимальный размер адреса
+    char s[INET6_ADDRSTRLEN]; // максимальный размер адреса
+
+    printf("server: waiting for connections...\n");
 
     // первый подключающийся
     new_fd[0] = accept(sockfd, (struct sockaddr *)&addr1, &sin_size);
@@ -273,7 +272,7 @@ void Tcp_Server::create_connection_for_two_players_Server()
 
         std::string to_send; // что отправляем
         int turn_number = 0; // номер хода
-        ACTION type;         // тип действия
+        ACTION type = MY_NULL;         // тип действия
 
         while (type != END_GAME) {
             turn_number++;
