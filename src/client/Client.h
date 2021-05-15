@@ -22,6 +22,7 @@ public:
     void test_Client();
     std::queue<std::string> recv_buf; // очередь с сообщениями от сервера
     int seed, id;
+    std::thread thr;
 
 private:
     int sockfd; // сокет для подключения

@@ -10,7 +10,7 @@
 #include "World.h"
 #include "Client.h"
 
-// #define MULTIPLAYER
+#define MULTIPLAYER
 
 class GameWindow
 {

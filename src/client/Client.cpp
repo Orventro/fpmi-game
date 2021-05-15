@@ -50,7 +50,7 @@ Client::Client()
     seed = atoi(&buf_to_send[2]);
     id = buf_to_send[0] - '1';
     // делаем отдельный поток, который будет бесконечно считывать и записывать в очередь recv_buf сообщения от сервера
-    std::thread thr(thread_inf_recv, std::ref(recv_buf), sockfd);
+    thr = std::thread(thread_inf_recv, std::ref(recv_buf), sockfd);
     thr.detach();
 }
 
