@@ -97,11 +97,13 @@ int GameWindow::render()
 
     if (state == states[STATE_WAITING])
         std::invoke(state, this, event);
-
-    if (client.recv_buf.size() > 0)
+    else
     {
-        if (client.recv_buf.front()[0] == '3')
-            setState(STATE_FINISH);
+        if (client.recv_buf.size() > 0)
+        {
+            if (client.recv_buf.front()[0] == '3')
+                setState(STATE_FINISH);
+        }
     }
 
     window.clear();
@@ -169,6 +171,7 @@ void GameWindow::waiting(sf::Event event)
                 cout << "no action\n";
             break;
         case END_GAME:
+            setState(STATE_NEUTRAL);
             setState(STATE_FINISH);
             break;
         default:
