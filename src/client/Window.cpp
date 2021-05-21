@@ -98,6 +98,12 @@ int GameWindow::render()
     if (state == states[STATE_WAITING])
         std::invoke(state, this, event);
 
+    if (client.recv_buf.size() > 0)
+    {
+        if (client.recv_buf.front()[0] == '3')
+            setState(STATE_FINISH);
+    }
+
     window.clear();
 
     if (state == states[STATE_FINISH])
@@ -287,6 +293,7 @@ void GameWindow::setState(int state_id)
         }
         auto bounds = endgameText.getLocalBounds();
         endgameText.setOrigin({bounds.width / 2, bounds.height / 2});
+        client.~Client();
     }
     state = states[state_id];
     hint.setString(hints[state_id]);
