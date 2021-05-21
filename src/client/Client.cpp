@@ -25,19 +25,15 @@ void thread_inf_recv(std::queue<std::string> &recv_buf, int sockfd)
         // sleep(1);
         std::string out;
         char buf_to_send[MAXDATASIZE];
-        if (recv(sockfd, buf_to_send, MAXDATASIZE, 0) == -1)
+        if (recv(sockfd, buf_to_send, MAXDATASIZE, 0) <= 0)
         {
-            perror("client: recv");
-            exit(1);
+            break;
         }
         out = std::string(buf_to_send);
         recv_buf.push(out);
         cout << "recieve " << out << endl;
-        // если произошел End_Game
-        if (out == "3") {
-            break;
-        }
     }
+    close(sockfd);
 }
 
 Client::Client()
@@ -61,7 +57,6 @@ Client::Client()
 
 Client::~Client()
 {
-    close(sockfd);
 }
 
 void Client::connect_Client()

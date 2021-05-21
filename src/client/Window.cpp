@@ -296,7 +296,6 @@ void GameWindow::setState(int state_id)
         }
         auto bounds = endgameText.getLocalBounds();
         endgameText.setOrigin({bounds.width / 2, bounds.height / 2});
-        client.~Client();
     }
     state = states[state_id];
     hint.setString(hints[state_id]);
