@@ -95,6 +95,9 @@ int GameWindow::render()
             std::invoke(state, this, event); // C++17
     }
 
+    if (state == states[STATE_WAITING])
+        std::invoke(state, this, event);
+
     window.clear();
 
     if (state == states[STATE_FINISH])
@@ -156,7 +159,8 @@ void GameWindow::waiting(sf::Event event)
             sscanf(s.c_str(), "%d %d %f %f", &t, &num, &x, &y);
             // cout << "unit action " << sf::Vector2f(x, y) << ' ' << num << endl;
             world->selectUnit(num);
-            world->action(sf::Vector2f(x, y));
+            if (!world->action(sf::Vector2f(x, y)))
+                cout << "no action\n";
             break;
         case END_GAME:
             setState(STATE_FINISH);
@@ -195,10 +199,7 @@ void GameWindow::send(ACTION actionType, int num, sf::Vector2f vec)
         c = reinterpret_cast<char *>(&info);
         // message += std::string(c, sizeof(std::tuple<sf::Vector2f, int>));
         message += std::to_string(num) + " " + std::to_string(vec.x) + " " + std::to_string(vec.y);
-        cout << "send " << ' ' << num << ' ' << vec << '\n';
     }
-    else
-        cout << "nm " << endl;
     client.send_Client(message);
 }
 #endif

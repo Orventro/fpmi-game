@@ -11,6 +11,7 @@
 #include <iostream>
 #include <queue>
 #include <thread>
+#include "consts.h"
 
 class Client
 {

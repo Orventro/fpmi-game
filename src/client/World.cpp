@@ -66,6 +66,7 @@ bool World::selectUnit(int id)
         map->renderBorder(sf::Vector2u(activeArmy->getSelectedUnit()->getPosition()), activeArmy->getSelectedUnit()->getEnergy());
         return 1;
     }
+    cout << "can't select unit " << id << endl;
     return 0;
 }
 

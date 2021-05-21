@@ -32,6 +32,7 @@ void thread_inf_recv(std::queue<std::string> &recv_buf, int sockfd)
         }
         out = std::string(buf_to_send);
         recv_buf.push(out);
+        cout << "recieve " << out << endl;
     }
 }
 
@@ -115,6 +116,7 @@ void Client::send_Client(std::string s)
 {
     char buf_to_send[MAXDATASIZE];
     strcpy(buf_to_send, s.c_str());
+    cout << "send " << s << endl;
     if (send(sockfd, buf_to_send, MAXDATASIZE, 0) == -1)
     {
         perror("client: send");
