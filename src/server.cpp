@@ -56,14 +56,13 @@ public:
 private:
     int sockfd;                                                          // сокет для listen
     int new_fd[2];                                                       // сокет для  accept. new_fd[0] - первый пользователь. new_fd[1] - второй пользователь
-    int yes;                                                                     // для функции setsockopt, которая позволит повторно использовать порт при перезапуске сервера. Это необходимо,тк порт при перезапуске будет занят прошлым сокетом
+    int yes;                                                             // для функции setsockopt, которая позволит повторно использовать порт при перезапуске сервера. Это необходимо,тк порт при перезапуске будет занят прошлым сокетом
     std::vector<std::pair<sockaddr_storage, sockaddr_storage>> pairs_of_players; // созданные пары
 };
 
 // получаем тип адреса сокета, IPv4 или IPv6:
 void *get_in_addr(struct sockaddr *sa)
 {
-
     if (sa->sa_family == AF_INET)
     {
         return &(((struct sockaddr_in *)sa)->sin_addr);
@@ -154,7 +153,6 @@ void Tcp_Server::start_Server()
     freeaddrinfo(servinfo);
 }
 
-// возможно надо будет убивать все дочерние процессы при закрытии сервера (доделать это)
 void Tcp_Server ::close_Server()
 {
     close(sockfd);
@@ -170,7 +168,6 @@ void Tcp_Server ::restart_Server()
 
 void Tcp_Server::listen_Server()
 {
-
     if (sockfd == -1)
     {
         perror("server: not initialized soket for listening\n");
@@ -201,7 +198,7 @@ std::string Tcp_Server::recv_Server(int sockfd)
     {
         // посылаем второму, что он сдался. Этим идентификатором будет служить число 3
         out = "3";
-        std :: cout << " you have finished " << std::endl;
+        std :: cout << " pair has finished " << std::endl;
         sleep(5);
     }
     std :: cout << out << std::endl;
@@ -214,9 +211,8 @@ int Tcp_Server::send_Server(int sockfd, std::string s)
     strcpy(buf_to_send, s.c_str());
     if (send(sockfd, buf_to_send, MAXDATASIZE, 0) == -1)
     {
-        std::cout << " you have finished " << std::endl;
+        std::cout << " pair has finished " << std::endl;
         return 1;
-        perror(" second client disconected ");
     }
     return 0;
 }
@@ -224,7 +220,7 @@ int Tcp_Server::send_Server(int sockfd, std::string s)
 void Tcp_Server::create_connection_for_two_players_Server()
 {
     struct sockaddr_storage addr1, addr2; // инфа про подключающихся
-    socklen_t sin_size = sizeof(addr1);   // accept() не поместит в addr обьём данных больше, чем в этой переменной
+    socklen_t sin_size = sizeof (addr1);   // accept() не поместит в addr обьём данных больше, чем в этой переменной
     char s[INET6_ADDRSTRLEN]; // максимальный размер адреса
 
     printf("server: waiting for connections...\n");
@@ -288,6 +284,9 @@ void Tcp_Server::create_connection_for_two_players_Server()
             if (person_to_receive_disconnected == 1) {
                 type = END_GAME;
                 send_Server(new_fd[turn_number % 2], "3");
+                close (new_fd[0]);
+                close (new_fd[1]);
+                exit(0);
             }
             // пока первый не скажет, что он закончил(finished), он может писать. Если он скажет exit, то чат закрываем
             while (type != END_MOVE && type != END_GAME) {
@@ -299,6 +298,9 @@ void Tcp_Server::create_connection_for_two_players_Server()
                 person_to_receive_disconnected = send_Server(new_fd[turn_number % 2], to_send);
                 if (to_send == "3") {
                     type = END_GAME;
+                    close (new_fd[0]);
+                    close (new_fd[1]);
+                    exit(0);
                 }
             }
         }
