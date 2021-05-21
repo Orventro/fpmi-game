@@ -35,7 +35,7 @@ void thread_inf_recv(std::queue<std::string> &recv_buf, int sockfd)
         cout << "recieve " << out << endl;
         // если произошел End_Game
         if (out == "3") {
-            break;   
+            exit (0);
         }
     }
 }
