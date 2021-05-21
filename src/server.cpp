@@ -51,7 +51,7 @@ public:
     void listen_Server();
     void create_connection_for_two_players_Server();
     std::string recv_Server(int sockfd);
-    void send_Server(int sockfd, std::string s);
+    int send_Server(int sockfd, std::string s);
 
 private:
     int sockfd;                                                          // сокет для listen
@@ -196,23 +196,29 @@ std::string Tcp_Server::recv_Server(int sockfd)
         exit(1);
     }
     out = std::string(buf_to_send);
-    /*// проверям отключился ли игрок, от которого мы получили сообщение
+    // проверям отключился ли игрок, от которого мы получили сообщение
     if (r == 0)
     {
         // посылаем второму, что он сдался. Этим идентификатором будет служить число 3
         out = "3";
-    }*/
+        std :: cout << " you have finished " << std::endl;
+        sleep(5);
+    }
+    std :: cout << out << std::endl;
     return out;
 }
 
-void Tcp_Server::send_Server(int sockfd, std::string s)
+int Tcp_Server::send_Server(int sockfd, std::string s)
 {
     char buf_to_send[MAXDATASIZE];
     strcpy(buf_to_send, s.c_str());
     if (send(sockfd, buf_to_send, MAXDATASIZE, 0) == -1)
     {
-        perror("client: send");
+        std::cout << " you have finished " << std::endl;
+        return 1;
+        perror(" second client disconected ");
     }
+    return 0;
 }
 
 void Tcp_Server::create_connection_for_two_players_Server()
@@ -272,12 +278,17 @@ void Tcp_Server::create_connection_for_two_players_Server()
 
         std::string to_send; // что отправляем
         int turn_number = 0; // номер хода
-        ACTION type = MY_NULL;         // тип действия
+        ACTION type = MY_NULL; // тип действия
+        int person_to_receive_disconnected = 0; // отключился ли игрок, который получает сообщения
 
         while (type != END_GAME) {
             turn_number++;
             to_send.clear();
             type = MY_NULL;
+            if (person_to_receive_disconnected == 1) {
+                type = END_GAME;
+                send_Server(new_fd[turn_number % 2], "3");
+            }
             // пока первый не скажет, что он закончил(finished), он может писать. Если он скажет exit, то чат закрываем
             while (type != END_MOVE && type != END_GAME) {
                 // сначала читаем данные из буфера, которые передал пользователь с правом rw
@@ -285,7 +296,10 @@ void Tcp_Server::create_connection_for_two_players_Server()
                 // распаковываем и получаем тип действия
                 type = ACTION((int)(to_send[0] - '0'));
                 // теперь передаем их пользователю, который имеет только право на чтение
-                send_Server(new_fd[turn_number % 2], to_send);
+                person_to_receive_disconnected = send_Server(new_fd[turn_number % 2], to_send);
+                if (to_send == "3") {
+                    type = END_GAME;
+                }
             }
         }
         // мы закончили чатиться/играть, поэтому закрываем сокеты для этой пары
