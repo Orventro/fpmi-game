@@ -281,14 +281,6 @@ void Tcp_Server::create_connection_for_two_players_Server()
             turn_number++;
             to_send.clear();
             type = MY_NULL;
-            if (person_to_receive_disconnected == 1) {
-                type = END_GAME;
-                send_Server(new_fd[turn_number % 2], "3");
-                // убиваем текущий процесс
-                close (new_fd[0]);
-                close (new_fd[1]);
-                kill(getpid(),SIGINT);
-            }
             // пока первый не скажет, что он закончил(finished), он может писать. Если он скажет exit, то чат закрываем
             while (type != END_MOVE && type != END_GAME) {
                 // сначала читаем данные из буфера, которые передал пользователь с правом rw
@@ -298,7 +290,10 @@ void Tcp_Server::create_connection_for_two_players_Server()
                 // теперь передаем их пользователю, который имеет только право на чтение
                 person_to_receive_disconnected = send_Server(new_fd[turn_number % 2], to_send);
                 // если мы второму челу отправили статус завершения игры, завершаем
-                if (to_send == "3") {
+                if (to_send == "3" || person_to_receive_disconnected == 1) {
+                    if (person_to_receive_disconnected == 1) {
+                        send_Server(new_fd[turn_number % 2], "3");
+                    }
                     type = END_GAME;
                     // убиваем текущий процесс
                     close (new_fd[0]);
