@@ -66,6 +66,7 @@ bool World::selectUnit(int id)
         map->renderBorder(sf::Vector2u(activeArmy->getSelectedUnit()->getPosition()), activeArmy->getSelectedUnit()->getEnergy());
         return 1;
     }
+    cout << "can't select unit " << id << endl;
     return 0;
 }
 
@@ -152,10 +153,17 @@ void World::moveCamera(sf::RenderWindow &renderWindow, float dt)
     renderWindow.setView(camera);
 }
 
-void World::render(sf::RenderWindow &renderWindow, float dt, bool drawTownRadius, bool drawMovementBorder)
+int World::render(sf::RenderWindow &renderWindow, float dt, bool drawTownRadius, bool drawMovementBorder)
 {
+    int aliveCount = 0;
     for (Army *a : armies)
-        a->update(dt);
+    {
+        if (a->alive())
+        {
+            aliveCount++;
+            a->update(dt);
+        }
+    }
 
     moveCamera(renderWindow, dt);
 
@@ -163,6 +171,8 @@ void World::render(sf::RenderWindow &renderWindow, float dt, bool drawTownRadius
 
     for (auto a : armies)
         a->render(renderWindow);
+
+    return aliveCount > 1;
 
     // gold_amount.setOrigin(-camera.getCenter() + sf::Vector2f(windowSize) * 0.5f + GOLD_OFFSET);
     // renderWindow.draw(gold_amount);

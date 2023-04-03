@@ -88,7 +88,12 @@ bool Unit::attack(Unit *u)
 {
     if (flag_attack)
         return 0;
-    if (norm(u->getPosition() - position) <= attackRadius * attackRadius)
+    sf::Vector2f attackFrom;
+    if (isAnimating())
+        attackFrom = path.front();
+    else
+        attackFrom = position;
+    if (norm(u->getPosition() - attackFrom) <= attackRadius * attackRadius)
     {
         u->attacked(damage);
         flag_attack = true;

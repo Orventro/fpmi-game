@@ -42,6 +42,12 @@ GameWindow::GameWindow(sf::Vector2f size) : window(sf::VideoMode(size.x, size.y)
         exit(1);
     }
     goldAmount.setFont(goldFont);
+
+    endgameText.setFont(defaultFont);
+    endgameText.setPosition({0, 0});
+    endgameText.setCharacterSize(150);
+
+    lastFrameTime = std::chrono::steady_clock::now();
 }
 
 int GameWindow::render()
@@ -60,13 +66,13 @@ int GameWindow::render()
             goldAmount.setPosition(sf::Vector2f(window.getSize().x, -(float)window.getSize().y) * 0.5f + GOLD_OFFSET);
             hint.setPosition(sf::Vector2f(-(float)window.getSize().x, window.getSize().y) * 0.5f + HINT_OFFSET);
         }
-        else if ((event.type == sf::Event::KeyPressed) & (event.key.code == sf::Keyboard::Escape))
+        else if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape))
         {
             return 1;
         }
         else if ((state != &GameWindow::waiting) & (state != &GameWindow::finish))
         {
-            if ((event.type == sf::Event::KeyPressed) & (event.key.code == sf::Keyboard::Space))
+            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Space))
             {
                 world->newMove();
 #ifdef MULTIPLAYER
@@ -89,15 +95,40 @@ int GameWindow::render()
             std::invoke(state, this, event); // C++17
     }
 
+    if (state == states[STATE_WAITING])
+        std::invoke(state, this, event);
+    else
+    {
+        if (client.recv_buf.size() > 0)
+        {
+            if (client.recv_buf.front()[0] == '3')
+                setState(STATE_FINISH);
+        }
+    }
+
     window.clear();
 
-    world->render(window, 1.0f / FPS, (state == &GameWindow::unit_selected) | (state == &GameWindow::place_new_unit), state == &GameWindow::unit_selected);
+    if (state == states[STATE_FINISH])
+    {
+        window.draw(endgameText);
+    }
+    else
+    {
+        timestamp newFrameTime = std::chrono::steady_clock::now();
+        int gameNotEnded = world->render(window, get_microseconds(newFrameTime - lastFrameTime) * 1e-6f,
+                                         (state == &GameWindow::unit_selected) | (state == &GameWindow::place_new_unit),
+                                         state == &GameWindow::unit_selected);
+        lastFrameTime = newFrameTime;
 
-    sf::View v = window.getView();
-    v.setCenter({0, 0});
-    window.setView(v);
-    window.draw(goldAmount);
-    window.draw(hint);
+        sf::View v = window.getView();
+        v.setCenter({0, 0});
+        window.setView(v);
+        window.draw(goldAmount);
+        window.draw(hint);
+
+        if (!gameNotEnded)
+            setState(STATE_FINISH);
+    }
 
     window.display();
 
@@ -136,9 +167,11 @@ void GameWindow::waiting(sf::Event event)
             sscanf(s.c_str(), "%d %d %f %f", &t, &num, &x, &y);
             // cout << "unit action " << sf::Vector2f(x, y) << ' ' << num << endl;
             world->selectUnit(num);
-            world->action(sf::Vector2f(x, y));
+            if (!world->action(sf::Vector2f(x, y)))
+                cout << "no action\n";
             break;
         case END_GAME:
+            setState(STATE_NEUTRAL);
             setState(STATE_FINISH);
             break;
         default:
@@ -175,10 +208,7 @@ void GameWindow::send(ACTION actionType, int num, sf::Vector2f vec)
         c = reinterpret_cast<char *>(&info);
         // message += std::string(c, sizeof(std::tuple<sf::Vector2f, int>));
         message += std::to_string(num) + " " + std::to_string(vec.x) + " " + std::to_string(vec.y);
-        cout << "send " << ' ' << num << ' ' << vec << '\n';
     }
-    else
-        cout << "nm " << endl;
     client.send_Client(message);
 }
 #endif
@@ -251,6 +281,22 @@ void GameWindow::finish(sf::Event event)
 
 void GameWindow::setState(int state_id)
 {
+    if (state_id == STATE_FINISH)
+    {
+
+        if (state == states[STATE_WAITING])
+        {
+            endgameText.setString("LOSS");
+            endgameText.setFillColor(LOSE_COLOR);
+        }
+        else
+        {
+            endgameText.setString("WIN");
+            endgameText.setFillColor(WIN_COLOR);
+        }
+        auto bounds = endgameText.getLocalBounds();
+        endgameText.setOrigin({bounds.width / 2, bounds.height / 2});
+    }
     state = states[state_id];
     hint.setString(hints[state_id]);
 }

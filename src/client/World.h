@@ -26,7 +26,8 @@ private:
 public:
     World(sf::Vector2f winSize = DEFAULT_WINDOW_SIZE, sf::Vector2f _size = WORLD_SIZE);
 
-    void render(sf::RenderWindow &window, float delta, bool drawTownRadius, bool drawMovementBorder);
+    // returns 1 if game not ended yet, otherwise 0
+    int render(sf::RenderWindow &window, float delta, bool drawTownRadius, bool drawMovementBorder);
 
     // adapt to new window size
     void onResized(sf::Vector2f);

@@ -25,7 +25,7 @@ using std::max;
 using std::min;
 using std::set;
 using std::vector;
-using timestamp = std::chrono::_V2::system_clock::time_point;
+using timestamp = std::chrono::steady_clock::time_point;
 
 const sf::Vector2f UP(0, -1);
 const sf::Vector2f DOWN(0, 1);
@@ -38,6 +38,7 @@ const sf::Vector2f DEFAULT_WINDOW_SIZE(800, 600);
 
 // helpful functions defined in SupportFunctions.cpp
 
+int64_t get_microseconds(std::chrono::nanoseconds);
 float norm(sf::Vector2f v);
 float vlen(sf::Vector2f v);
 std::ostream &operator<<(std::ostream &os, const sf::Vector2f &v);
@@ -56,6 +57,8 @@ enum ACTION
 };
 // цвета элементов UI
 
+const sf::Color WIN_COLOR(68, 199, 24, 255);
+const sf::Color LOSE_COLOR(199, 53, 24, 255);
 const sf::Color SELECT_COLOR(20, 250, 20, 90);
 const sf::Color MOVE_COLOR(160, 220, 10, 50);
 const sf::Color ATTACK_COLOR(240, 50, 10, 70);
@@ -82,7 +85,7 @@ const size_t rand_denominator = 10000;
 const size_t sprite_size = size_elemantary_block_in_pixel * pixel_size;
 
 // void, sea, sand, grass
-const sf::Color TERRAIN_COLORS[] = {sf::Color::Black, sf::Color(0, 128, 255), sf::Color::Yellow, sf::Color::Green};
+const sf::Color TERRAIN_COLORS[] = {sf::Color::Black, sf::Color(32, 178, 220), sf::Color(242, 224, 62), sf::Color(65, 172, 10)};
 const float TERRAIN_OBSTRUCTION[] = {0, 5, 2, 1};
 
 const int START_GOLD = 0;
